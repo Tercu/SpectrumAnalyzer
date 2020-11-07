@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CSCore" Version="1.2.1.2" />
+  </ItemGroup>
+
 </Project>
