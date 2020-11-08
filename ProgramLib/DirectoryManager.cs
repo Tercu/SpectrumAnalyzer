@@ -9,6 +9,7 @@ namespace SpectrumAnalyser
         public string AudioFileExtension { get; set; }
         public string SpectrumFileExtension { get; set; }
         public List<string> AudioFileList { get; private set; }
+        private Logger logger = Logger.GetInstance();
         public DirectoryManager(string path, string audioExtension = ".flac", string spectrumExtension = ".png")
         {
             FilePath = path;
@@ -32,6 +33,7 @@ namespace SpectrumAnalyser
                 audioFiles.Remove(path);
             };
             AudioFileList = audioFiles;
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"Found {AudioFileList.Count} files in '{FilePath}'.");
         }
     }
 }

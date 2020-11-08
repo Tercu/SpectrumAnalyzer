@@ -1,6 +1,7 @@
 ﻿using SpectrumAnalyser;
 using System;
-using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ConsoleUI
 {
@@ -8,6 +9,12 @@ namespace ConsoleUI
     {
         static void Main(string[] args)
         {
+            Logger logger = Logger.GetInstance();
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            CancellationToken token = tokenSource.Token;
+            Task task = new Task(() => PrintLogs(token), token, TaskCreationOptions.LongRunning);
+            task.Start();
+
             string path = @"D:\dev";
 
             DateTime t1 = DateTime.Now;
@@ -17,7 +24,7 @@ namespace ConsoleUI
 
             foreach (var pathToFile in dirManager.AudioFileList)
             {
-                Console.WriteLine($"Processing file: {Path.GetFileName(pathToFile)}");
+
                 DateTime s1 = DateTime.Now;
 
                 AudioFile audio = new AudioFile(pathToFile);
@@ -28,14 +35,27 @@ namespace ConsoleUI
             }
 
             DateTime t2 = DateTime.Now;
-            Console.WriteLine($"All files processed in {t2 - t1}. Program may be closed.");
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"All files processed in {t2 - t1}. Program may be closed.");
+            while (!logger.IsEmpty())
+            {
+                Thread.Sleep(100);
+            }
+            tokenSource.Cancel();
 
-            //foreach (string s in dirManager.AudioFileList)
-            //{
-            //    Console.WriteLine(s);
-            //}
             Console.ReadKey();
         }
-        //dirManager.PrintFileList();
+        private static void PrintLogs(CancellationToken token)
+        {
+            Logger logger = Logger.GetInstance();
+            while (!token.IsCancellationRequested)
+            {
+                token.ThrowIfCancellationRequested();
+                while (logger.LogMessages.Count > 0)
+                {
+                    Console.WriteLine(logger.GetLogMessage().ToString());
+                }
+                Thread.Sleep(100);
+            }
+        }
     }
 }
