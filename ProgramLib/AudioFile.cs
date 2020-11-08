@@ -3,6 +3,7 @@ using CSCore.Codecs.FLAC;
 using CSCore.DSP;
 using CSCore.Utils;
 using System;
+using System.IO;
 
 namespace SpectrumAnalyser
 {
@@ -11,6 +12,7 @@ namespace SpectrumAnalyser
         public string FilePath { get; set; }
         private FlacFile flacFile;
         private ISampleSource sampleSource;
+        private Logger logger = Logger.GetInstance();
 
         public AudioFile(string filePath)
         {
@@ -20,6 +22,7 @@ namespace SpectrumAnalyser
 
         public void ReadFile()
         {
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(FilePath)}");
             int exponent = 8;
             int fftSampleSize = (int)Math.Pow(2, exponent);
             float[] samples = new float[fftSampleSize];
@@ -28,6 +31,8 @@ namespace SpectrumAnalyser
             {
                 PerformFft(exponent, samples, complex);
             } while (sampleSource.Length - fftSampleSize >= sampleSource.Position);
+            //logger.AddLogMessage(LogMessage.LogLevel.Info, $"Done in: {s2 - s1}");
+            //TODO Simple Timer
         }
 
         private void PerformFft(int exponent, float[] samples, Complex[] complex)
