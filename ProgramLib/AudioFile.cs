@@ -13,6 +13,7 @@ namespace SpectrumAnalyser
         private FlacFile flacFile;
         private ISampleSource sampleSource;
         private readonly Logger logger = Logger.GetInstance();
+        private BitmapGenerator bitmap = new BitmapGenerator(1025 * 4, 1025 * 4);
         public Histogram Histogram { get; private set; }
 
         public AudioFile(string filePath)
@@ -25,17 +26,16 @@ namespace SpectrumAnalyser
         public void ReadFile()
         {
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(FilePath)}");
-            int exponent = 11;
+            int exponent = 13;
             int fftSampleSize = (int)Math.Pow(2, exponent);
             float[] samples = new float[fftSampleSize];
             Complex[] complex = new Complex[fftSampleSize];
             sampleSource.Position = fftSampleSize;
-            do
-            {
-                PerformFft(exponent, samples, complex);
-                SaveResultToHistogram(fftSampleSize, complex);
-            }
-            while (sampleSource.Length - fftSampleSize >= sampleSource.Position);
+
+            PerformFft(exponent, samples, complex);
+            SaveResultToHistogram(fftSampleSize, complex);
+            bitmap.EditRow(0, Histogram);
+
             //logger.AddLogMessage(LogMessage.LogLevel.Info, $"Done in: {s2 - s1}");
             //TODO Simple Timer
         }
@@ -44,9 +44,8 @@ namespace SpectrumAnalyser
         {
             for (int i = 0; i < complex.Length / 2; i++)
             {
-                double result = Math.Sqrt(Math.Pow(complex[i].Real, 2) + Math.Pow(complex[i].Imaginary, 2));
                 double freq = i * sampleSource.WaveFormat.SampleRate / fftSampleSize;
-                Histogram.Add(freq, result);
+                Histogram.Add(freq, complex[i].Value);
             }
         }
 
