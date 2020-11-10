@@ -1,15 +1,18 @@
 ﻿using System.Drawing;
+using System.IO;
 
 namespace SpectrumAnalyser
 {
     public class BitmapGenerator
     {
+        public string PathToFile { get; private set; }
         public Bitmap Image { get; private set; }
         public int Height { get; private set; }
         public int Width { get; private set; }
         private int currentRow = 0;
-        public BitmapGenerator(int width, int height)
+        public BitmapGenerator(string path, int width, int height)
         {
+            PathToFile = path;
             Height = height;
             Width = width;
             Image = new Bitmap(Width, Height);
@@ -26,12 +29,11 @@ namespace SpectrumAnalyser
                 --index;
             }
             currentRow++;
-            SaveImage("");
         }
-        public void SaveImage(string path)
+        public void SaveImage()
         {
-            path = @"D:\dev\testImage.bmp";
-            Image.Save(path);
+            string name = @$"{ Path.GetDirectoryName(PathToFile)}\{ Path.GetFileNameWithoutExtension(PathToFile) }.bmp";
+            Image.Save(name);
         }
     }
 }

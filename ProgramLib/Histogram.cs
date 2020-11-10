@@ -5,9 +5,10 @@ namespace SpectrumAnalyser
 {
     public class Histogram
     {
-        public SortedDictionary<double, double> Data { get; private set; }
-        public SortedDictionary<double, double> NormalizedData { get; private set; }
-        public SortedDictionary<double, double> ShrinkedData { get; private set; }
+        public Dictionary<double, double> Data { get; private set; }
+        public Dictionary<double, double> NormalizedData { get; private set; }
+        public Dictionary<double, double> ShrinkedData { get; private set; }
+        private Logger logger = Logger.GetInstance();
 
         private double maximum = 0;
         private double minimum = 0;
@@ -16,12 +17,12 @@ namespace SpectrumAnalyser
 
         public Histogram()
         {
-            Data = new SortedDictionary<double, double>();
+            Data = new Dictionary<double, double>();
         }
         public void Add(double key, double value)
         {
             AddToDictionary(Data, key, value);
-            SetMinMax(value, ref minimum, ref maximum);
+            SetMinMax(Data[key], ref minimum, ref maximum);
         }
         public void Normalize()
         {
@@ -52,15 +53,15 @@ namespace SpectrumAnalyser
                 SetMinMax(value[i], ref shrinkedMinimum, ref shrinkedMaximum);
             }
         }
-        private void AddToDictionary(SortedDictionary<double, double> dictionary, double key, double value)
+        private void AddToDictionary(Dictionary<double, double> dictionary, double key, double value)
         {
-            if (Data.ContainsKey(key))
+            if (dictionary.ContainsKey(key))
             {
-                Data[key] = value; ;
+                dictionary[key] = value; ;
             }
             else
             {
-                Data.Add(key, value);
+                dictionary.Add(key, value);
             }
         }
         private void SetMinMax(double value, ref double min, ref double max)
@@ -68,9 +69,9 @@ namespace SpectrumAnalyser
             min = Math.Min(value, min);
             max = Math.Max(value, max);
         }
-        private void NormalizeDictionary(SortedDictionary<double, double> dictionary, double min, double max)
+        private void NormalizeDictionary(Dictionary<double, double> dictionary, double min, double max)
         {
-            NormalizedData = new SortedDictionary<double, double>();
+            NormalizedData = new Dictionary<double, double>();
             foreach (var key in dictionary.Keys)
             {
                 NormalizedData[key] = (dictionary[key] - min) / (max - min);
