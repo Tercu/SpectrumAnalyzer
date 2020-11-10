@@ -13,29 +13,47 @@ namespace SpectrumAnalyser
         private FlacFile flacFile;
         private ISampleSource sampleSource;
         private readonly Logger logger = Logger.GetInstance();
-        private BitmapGenerator bitmap = new BitmapGenerator(1025 * 4, 1025 * 4);
+        private BitmapGenerator bitmap;
         public Histogram Histogram { get; private set; }
+
+        private int exponent = 11;
+        private int bitmapRow = 0;
+        private int fftSampleSize;
+        private int bitmapWidth;
 
         public AudioFile(string filePath)
         {
             FilePath = filePath;
+            fftSampleSize = (int)Math.Pow(2, exponent);
             Init();
+            bitmapWidth = (int)sampleSource.Length / fftSampleSize;
+            bitmap = new BitmapGenerator(FilePath, bitmapWidth / 30 + 10, 1025);
             Histogram = new Histogram();
         }
 
         public void ReadFile()
         {
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(FilePath)}");
-            int exponent = 13;
-            int fftSampleSize = (int)Math.Pow(2, exponent);
+
             float[] samples = new float[fftSampleSize];
             Complex[] complex = new Complex[fftSampleSize];
-            sampleSource.Position = fftSampleSize;
+            int i = 0;
+            do
+            {
+                PerformFft(exponent, samples, complex);
+                SaveResultToHistogram(fftSampleSize, complex);
+                if (i % 30 == 0)
+                {
+                    Console.WriteLine($"{sampleSource.Position} / {sampleSource.Length}");
 
-            PerformFft(exponent, samples, complex);
-            SaveResultToHistogram(fftSampleSize, complex);
-            bitmap.EditRow(0, Histogram);
-
+                    bitmap.EditRow(bitmapRow, Histogram);
+                    ++bitmapRow;
+                    Histogram.Data.Clear();
+                }
+                ++i;
+            }
+            while (sampleSource.Position < sampleSource.Length - fftSampleSize);
+            bitmap.SaveImage();
             //logger.AddLogMessage(LogMessage.LogLevel.Info, $"Done in: {s2 - s1}");
             //TODO Simple Timer
         }
