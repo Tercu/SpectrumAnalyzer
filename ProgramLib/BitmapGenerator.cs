@@ -10,6 +10,7 @@ namespace SpectrumAnalyser
         public int Height { get; private set; }
         public int Width { get; private set; }
         private int currentRow = 0;
+        private Gradient gradient = new Gradient();
         public BitmapGenerator(string path, int width, int height)
         {
             PathToFile = path;
@@ -24,8 +25,8 @@ namespace SpectrumAnalyser
             histogram.Normalize();
             foreach (var h in histogram.NormalizedData)
             {
-                double red = h.Value * 255;
-                Image.SetPixel(row, index, Color.FromArgb(255, 255 - (int)red, 255 - (int)red));
+                Color color = gradient.GetGradientColor(255 - (int)(h.Value * 255));
+                Image.SetPixel(row, index, color);
                 --index;
             }
             currentRow++;
