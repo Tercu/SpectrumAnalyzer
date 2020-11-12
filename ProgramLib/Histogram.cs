@@ -1,5 +1,7 @@
-﻿using System;
+﻿using CSCore.Utils;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SpectrumAnalyser
 {
@@ -10,27 +12,24 @@ namespace SpectrumAnalyser
         public Dictionary<double, double> ShrinkedData { get; private set; }
         private Logger logger = Logger.GetInstance();
 
-        private double maximum = 0;
-        private double minimum = 0;
-        private double shrinkedMaximum = 0;
-        private double shrinkedMinimum = 0;
-
         public Histogram()
         {
             Data = new Dictionary<double, double>();
+            NormalizedData = new Dictionary<double, double>();
         }
-        public void Add(double key, double value)
+        public void Add(double key, Complex complex)
         {
-            AddToDictionary(Data, key, value);
-            SetMinMax(Data[key], ref minimum, ref maximum);
+            //double val = 10 * Math.Log(Math.Pow(complex.Real, 2) + Math.Pow(complex.Imaginary, 2));
+            double val = 10 * Math.Log(complex.Real * complex.Real + complex.Real * complex.Imaginary);
+            AddToDictionary(Data, key, complex);
         }
         public void Normalize()
         {
-            NormalizeDictionary(Data, minimum, maximum);
+            NormalizeDictionary(Data, NormalizedData);
         }
         public void NormalizeShrinked()
         {
-            NormalizeDictionary(ShrinkedData, shrinkedMinimum, shrinkedMaximum);
+            NormalizeDictionary(ShrinkedData, NormalizedData);
         }
         public void Shrink(int shrinkedSize)
         {
@@ -50,7 +49,6 @@ namespace SpectrumAnalyser
             for (int i = 0; i < key.Length; ++i)
             {
                 AddToDictionary(ShrinkedData, key[i] / timesModified[i], value[i]);
-                SetMinMax(value[i], ref shrinkedMinimum, ref shrinkedMaximum);
             }
         }
         private void AddToDictionary(Dictionary<double, double> dictionary, double key, double value)
@@ -64,17 +62,20 @@ namespace SpectrumAnalyser
                 dictionary.Add(key, value);
             }
         }
-        private void SetMinMax(double value, ref double min, ref double max)
+
+        private void NormalizeDictionary(Dictionary<double, double> source, Dictionary<double, double> destination)
         {
-            min = Math.Min(value, min);
-            max = Math.Max(value, max);
-        }
-        private void NormalizeDictionary(Dictionary<double, double> dictionary, double min, double max)
-        {
-            NormalizedData = new Dictionary<double, double>();
-            foreach (var key in dictionary.Keys)
+            //destination = new Dictionary<double, double>();
+            double max = source.Values.Max();
+            double min = source.Values.Min();
+            if (min != max)
             {
-                NormalizedData[key] = (dictionary[key] - min) / (max - min);
+                foreach (var key in source.Keys)
+                {
+                    double v = (source[key] - min) / (max - min);
+                    destination[key] = v;
+
+                }
             }
         }
     }

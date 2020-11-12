@@ -5,16 +5,16 @@ namespace SpectrumAnalyser
 {
     public class Gradient
     {
-        private Bitmap map = new Bitmap(1, 256);
+        private Bitmap map = new Bitmap(1, 257);
 
         public Gradient()
         {
             // Put the points of a polygon in an array.
             int height = map.Height / 3;
             Point[] points = {
-       new Point(0, 0),
-       new Point(0, 1*height),
-       new Point(0, 2*height),
+       new Point(0, 0*height),
+       new Point(0, (int)(2*height)),
+       new Point(0, (int)(2.7*height)),
        new Point(0, 3*height),
        new Point(1, 30),
             };
@@ -32,10 +32,10 @@ namespace SpectrumAnalyser
             // Set the colors of the points in the array.
             Color[] colors = {
        Color.Yellow,
+       Color.Orange,
        Color.Red,
        Color.DarkViolet,
        Color.Black,
-       Color.Violet,
             };
 
             pthGrBrush.SurroundColors = colors;
@@ -44,7 +44,7 @@ namespace SpectrumAnalyser
         }
         public Color GetGradientColor(int position)
         {
-            return map.GetPixel(0, position);
+            return map.GetPixel(0, position + 1);
         }
     }
 }
