@@ -17,15 +17,16 @@ namespace SpectrumAnalyser
             Height = height;
             Width = width;
             Image = new Bitmap(Width, Height);
-
         }
         public void EditRow(int row, Histogram histogram)
         {
             int index = Height - 1;
             histogram.Normalize();
+            int position = 0;
             foreach (var h in histogram.NormalizedData)
             {
-                Color color = gradient.GetGradientColor(255 - (int)(h.Value * 255));
+                position = 255 - (int)((double)h.Value * 255);
+                Color color = gradient.GetGradientColor(position);
                 Image.SetPixel(row, index, color);
                 --index;
             }

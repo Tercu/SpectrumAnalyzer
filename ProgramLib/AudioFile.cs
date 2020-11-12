@@ -44,8 +44,6 @@ namespace SpectrumAnalyser
                 SaveResultToHistogram(fftSampleSize, complex);
                 if (i % 30 == 0)
                 {
-                    Console.WriteLine($"{sampleSource.Position} / {sampleSource.Length}");
-
                     bitmap.EditRow(bitmapRow, Histogram);
                     ++bitmapRow;
                     Histogram.Data.Clear();
@@ -63,13 +61,17 @@ namespace SpectrumAnalyser
             for (int i = 0; i < complex.Length / 2; i++)
             {
                 double freq = i * sampleSource.WaveFormat.SampleRate / fftSampleSize;
-                Histogram.Add(freq, complex[i].Value);
+                Histogram.Add(freq, complex[i]);
             }
         }
 
         private void PerformFft(int exponent, float[] samples, Complex[] complex)
         {
             sampleSource.Read(samples, 0, samples.Length);
+            for (int i = 0; i < samples.Length; ++i)
+            {
+                samples[i] *= (float)FastFourierTransformation.HammingWindow(i, samples.Length);
+            }
             FillComplexArrayRealOnly(samples, complex);
             FastFourierTransformation.Fft(complex, exponent, FftMode.Forward);
         }
