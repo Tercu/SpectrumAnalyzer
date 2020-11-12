@@ -21,10 +21,10 @@ namespace ConsoleUI
 
             Spectrum spectrum = new Spectrum(path);
 
-            spectrum.CreateFileList();
-            spectrum.InitTasks();
-            spectrum.StartTasks();
-            spectrum.WaitForTasks();
+            spectrum.RunSinglethread();
+            //spectrum.InitTasks();
+            //spectrum.StartTasks();
+            //spectrum.WaitForTasks();
 
             DateTime t2 = DateTime.Now;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"All files processed in {t2 - t1}. Program may be closed.");
