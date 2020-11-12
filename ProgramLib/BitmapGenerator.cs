@@ -25,7 +25,7 @@ namespace SpectrumAnalyser
             int position = 0;
             foreach (var h in histogram.NormalizedData)
             {
-                position = 255 - (int)((double)h.Value * 255);
+                position = 1023 - (int)((double)h.Value * 1023);
                 Color color = gradient.GetGradientColor(position);
                 Image.SetPixel(row, index, color);
                 --index;
@@ -34,7 +34,7 @@ namespace SpectrumAnalyser
         }
         public void SaveImage()
         {
-            string name = @$"{ Path.GetDirectoryName(PathToFile)}\{ Path.GetFileNameWithoutExtension(PathToFile) }.bmp";
+            string name = @$"{ Path.GetDirectoryName(PathToFile)}\{ Path.GetFileNameWithoutExtension(PathToFile) }.png";
             Image.Save(name);
         }
     }
