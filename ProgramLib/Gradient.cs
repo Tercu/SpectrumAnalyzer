@@ -10,13 +10,14 @@ namespace SpectrumAnalyser
         public Gradient()
         {
             // Put the points of a polygon in an array.
-            int height = map.Height / 4;
+            int height = map.Height / 5;
             Point[] points = {
        new Point(0, -1),
+       new Point(0, (int)(0.7*height)),
+       new Point(0, (int)(1.3*height)),
+       new Point(0, (int)(2.7*height)),
        new Point(0, (int)(3.0*height)),
-       new Point(0, (int)(3.7*height)),
-       new Point(0, (int)(3.988*height)),
-       new Point(0, (int)(4*height)),
+       new Point(0, (int)(5.0*height)),
        new Point(1, 30),
             };
 
@@ -37,7 +38,7 @@ namespace SpectrumAnalyser
        Color.Red,
        Color.DarkViolet,
        Color.Black,
-
+       Color.Black,
             };
 
             pthGrBrush.SurroundColors = colors;

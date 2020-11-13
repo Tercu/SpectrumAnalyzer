@@ -21,9 +21,8 @@ namespace SpectrumAnalyser
         public void EditRow(int row, Histogram histogram)
         {
             int index = Height - 1;
-            histogram.Normalize();
-            int position = 0;
-            foreach (var h in histogram.NormalizedData)
+            int position;
+            foreach (var h in histogram.Data)
             {
                 position = 1023 - (int)((double)h.Value * 1023);
                 Color color = gradient.GetGradientColor(position);
