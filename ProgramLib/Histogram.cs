@@ -1,35 +1,48 @@
 ﻿using CSCore.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SpectrumAnalyser
 {
     public class Histogram
     {
         public Dictionary<double, double> Data { get; private set; }
-        public Dictionary<double, double> NormalizedData { get; private set; }
-        public Dictionary<double, double> ShrinkedData { get; private set; }
         private Logger logger = Logger.GetInstance();
 
         public Histogram()
         {
             Data = new Dictionary<double, double>();
-            NormalizedData = new Dictionary<double, double>();
         }
-        public void Add(double key, Complex complex)
+        public void Add(Complex[] complex, int sampleRate, int fftSampleSize)
         {
-            //double val = 10 * Math.Log(Math.Pow(complex.Real, 2) + Math.Pow(complex.Imaginary, 2));
-            double val = 10 * Math.Log(complex.Real * complex.Real + complex.Real * complex.Imaginary);
-            AddToDictionary(Data, key, complex);
+            for (int i = 0; i < complex.Length / 2; i++)
+            {
+                double freq = i * sampleRate / fftSampleSize;
+                double val = complex[i].Real * complex[i].Real + complex[i].Imaginary * complex[i].Imaginary;
+                AddToDictionary(Data, freq, val);
+            }
         }
-        public void Normalize()
+        public void ShiftToPositive(double shift)
         {
-            NormalizeDictionary(Data, NormalizedData);
+            Dictionary<double, double> ToPositive = new Dictionary<double, double>();
+            foreach (var key in Data.Keys)
+            {
+                double v = Data[key] - shift;
+                ToPositive[key] = v;
+            }
+            Data = ToPositive;
         }
-        public void NormalizeShrinked()
+        public void Normalize(double max, double min)
         {
-            NormalizeDictionary(ShrinkedData, NormalizedData);
+            Dictionary<double, double> NormalizedData = new Dictionary<double, double>();
+
+            double factor = (max - min);
+            foreach (var key in Data.Keys)
+            {
+                double v = (Data[key] - min) / factor;
+                NormalizedData[key] = v;
+            }
+            Data = NormalizedData;
         }
         public void Shrink(int shrinkedSize)
         {
@@ -48,14 +61,14 @@ namespace SpectrumAnalyser
             }
             for (int i = 0; i < key.Length; ++i)
             {
-                AddToDictionary(ShrinkedData, key[i] / timesModified[i], value[i]);
+                //AddToDictionary(ShrinkedData, key[i] / timesModified[i], value[i]);
             }
         }
         private void AddToDictionary(Dictionary<double, double> dictionary, double key, double value)
         {
             if (dictionary.ContainsKey(key))
             {
-                dictionary[key] = value; ;
+                dictionary[key] = value;
             }
             else
             {
@@ -63,20 +76,19 @@ namespace SpectrumAnalyser
             }
         }
 
-        private void NormalizeDictionary(Dictionary<double, double> source, Dictionary<double, double> destination)
+        public void CalculateDb()
         {
-            //destination = new Dictionary<double, double>();
-            double max = source.Values.Max();
-            double min = source.Values.Min();
-            if (min != max)
+            Dictionary<double, double> DbInfo = new Dictionary<double, double>();
+            foreach (var key in Data.Keys)
             {
-                foreach (var key in source.Keys)
+                double log = -18;
+                if (Data[key] != 0)
                 {
-                    double v = (source[key] - min) / (max - min);
-                    destination[key] = v;
-
+                    log = Math.Log10(Data[key]);
                 }
+                DbInfo[key] = 10 * log;
             }
+            Data = DbInfo;
         }
     }
 }
