@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SpectrumAnalyser
+namespace Spectrogram
 {
     public class Histogram
     {

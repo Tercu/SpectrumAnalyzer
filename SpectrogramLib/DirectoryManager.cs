@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 
-namespace SpectrumAnalyser
+namespace Spectrogram
 {
     public class DirectoryManager
     {
@@ -10,8 +11,12 @@ namespace SpectrumAnalyser
         public string SpectrumFileExtension { get; set; }
         public List<string> AudioFileList { get; private set; }
         private Logger logger = Logger.GetInstance();
-        public DirectoryManager(string path, string audioExtension = ".flac", string spectrumExtension = ".png")
+
+        private readonly IFileSystem fileSystem;
+
+        public DirectoryManager(IFileSystem _fileSystem, string path, string audioExtension = ".flac", string spectrumExtension = ".png")
         {
+            fileSystem = _fileSystem;
             FilePath = path;
             AudioFileExtension = audioExtension;
             SpectrumFileExtension = spectrumExtension;
@@ -19,8 +24,8 @@ namespace SpectrumAnalyser
 
         public void CreateFileList()
         {
-            List<string> audioFiles = new List<string>(Directory.GetFiles(FilePath, $"*{AudioFileExtension}", SearchOption.AllDirectories));
-            List<string> spectrumFiles = new List<string>(Directory.GetFiles(FilePath, $"*{SpectrumFileExtension}", SearchOption.AllDirectories));
+            List<string> audioFiles = new List<string>(fileSystem.Directory.GetFiles(FilePath, $"*{AudioFileExtension}", SearchOption.AllDirectories));
+            List<string> spectrumFiles = new List<string>(fileSystem.Directory.GetFiles(FilePath, $"*{SpectrumFileExtension}", SearchOption.AllDirectories));
 
             RemoveFilesWithSpectrum(audioFiles, spectrumFiles);
         }

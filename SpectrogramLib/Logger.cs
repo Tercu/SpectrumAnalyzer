@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SpectrumAnalyser
+namespace Spectrogram
 {
     public partial class Logger
     {

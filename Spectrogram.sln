@@ -5,7 +5,12 @@ VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleUI", "ConsoleUI\ConsoleUI.csproj", "{A201FB5A-C642-46F7-A533-6944CC00828F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProgramLib", "ProgramLib\ProgramLib.csproj", "{654DCEF9-6ED2-43DB-A759-5E1AFC0CE385}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpectrogramLib", "SpectrogramLib\SpectrogramLib.csproj", "{654DCEF9-6ED2-43DB-A759-5E1AFC0CE385}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpectrogramLibTest", "SpectrogramLibTest\SpectrogramLibTest.csproj", "{83469E85-03D7-4854-BF6D-62DB983106AF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{654DCEF9-6ED2-43DB-A759-5E1AFC0CE385} = {654DCEF9-6ED2-43DB-A759-5E1AFC0CE385}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +26,10 @@ Global
 		{654DCEF9-6ED2-43DB-A759-5E1AFC0CE385}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{654DCEF9-6ED2-43DB-A759-5E1AFC0CE385}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{654DCEF9-6ED2-43DB-A759-5E1AFC0CE385}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83469E85-03D7-4854-BF6D-62DB983106AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83469E85-03D7-4854-BF6D-62DB983106AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83469E85-03D7-4854-BF6D-62DB983106AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83469E85-03D7-4854-BF6D-62DB983106AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

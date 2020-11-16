@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace SpectrumAnalyser
+namespace Spectrogram
 {
     public class Spectrum
     {
@@ -28,7 +28,7 @@ namespace SpectrumAnalyser
         public Spectrum(string pathToDirectory)
         {
             PathToDirectory = pathToDirectory;
-            dirManager = new DirectoryManager(pathToDirectory);
+            dirManager = new DirectoryManager(new System.IO.Abstractions.FileSystem(), pathToDirectory);
             dirManager.CreateFileList();
             audioProcessorList = new List<AudioProcessor>();
 

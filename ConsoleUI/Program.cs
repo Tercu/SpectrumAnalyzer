@@ -1,4 +1,4 @@
-﻿using SpectrumAnalyser;
+﻿using Spectrogram;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

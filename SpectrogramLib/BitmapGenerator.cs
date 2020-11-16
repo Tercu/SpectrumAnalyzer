@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.IO;
 
-namespace SpectrumAnalyser
+namespace Spectrogram
 {
     public class BitmapGenerator
     {

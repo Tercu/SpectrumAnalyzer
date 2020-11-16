@@ -4,7 +4,7 @@ using CSCore.DSP;
 using CSCore.Utils;
 using System;
 
-namespace SpectrumAnalyser
+namespace Spectrogram
 {
     public class AudioFile
     {
