@@ -1,4 +1,4 @@
-﻿namespace SpectrumAnalyser
+﻿namespace Spectrogram
 {
     public class LogMessage
     {
