@@ -9,13 +9,13 @@ namespace Spectrogram.Test
         [Fact]
         public void ShouldReturnFileList()
         {
-            string path = @"D:\dev\test";
+            string path = @"/dev/test";
             MockFileSystem filesSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                {@"D:\dev\test\1.flac", new MockFileData(string.Empty)},
-                {@"D:\dev\test\2.flac", new MockFileData(string.Empty)},
-                {@"D:\dev\test\SubFolder\3.flac", new MockFileData(string.Empty)},
-                {@"D:\dev\test\SubFolder\4.flac", new MockFileData(string.Empty)},
+                {@"/dev/test/1.flac", new MockFileData(string.Empty)},
+                {@"/dev/test/2.flac", new MockFileData(string.Empty)},
+                {@"/dev/test/SubFolder/3.flac", new MockFileData(string.Empty)},
+                {@"/dev/test/SubFolder/4.flac", new MockFileData(string.Empty)},
             });
             DirectoryManager directory = new DirectoryManager(filesSystem, path);
             directory.CreateFileList();
