@@ -1,5 +1,5 @@
 ﻿using CSCore;
-using CSCore.Codecs.FLAC;
+using CSCore.Codecs;
 using CSCore.DSP;
 using CSCore.Utils;
 using System;
@@ -9,7 +9,7 @@ namespace SpectrumAnalyser
     public class AudioFile
     {
         public string FilePath { get; set; }
-        private FlacFile flacFile;
+        private IWaveSource flacFile;
         public ISampleSource SampleSource { get; private set; }
         private readonly Logger logger = Logger.GetInstance();
         public int BitmapWidth { get; }
@@ -32,8 +32,6 @@ namespace SpectrumAnalyser
 
             PerformFft(exponent, samples, complex);
             return complex;
-            //logger.AddLogMessage(LogMessage.LogLevel.Info, $"Done in: {s2 - s1}");
-            //TODO Simple Timer
         }
 
         private void PerformFft(int exponent, float[] samples, Complex[] complex)
@@ -49,7 +47,7 @@ namespace SpectrumAnalyser
 
         private void Init()
         {
-            flacFile = new FlacFile(FilePath);
+            IWaveSource flacFile = CodecFactory.Instance.GetCodec(FilePath);
             SampleSource = flacFile.ToSampleSource().ToMono();
         }
         private void FillComplexArrayRealOnly(float[] samples, Complex[] complex)
