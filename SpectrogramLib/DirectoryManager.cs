@@ -48,7 +48,7 @@ namespace Spectrogram
                 audioFiles.Remove(path);
             };
             AudioFileList = audioFiles;
-            logger.AddLogMessage(LogMessage.LogLevel.Info, $"Found {AudioFileList.Count} files in '{FilePath}'.");
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"Found {AudioFileList.Count} files.");
         }
     }
 }
