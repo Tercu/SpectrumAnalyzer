@@ -10,8 +10,7 @@ namespace Spectrogram.Test
         [MemberData(nameof(GetFileList))]
         public void ShouldReturnFileListWithoutRepeats(MockFileSystem fileSystem, string[] paths, int expected)
         {
-            MockFileSystem filesSystem = fileSystem;
-            DirectoryManager directory = new DirectoryManager(filesSystem, paths);
+            DirectoryManager directory = new DirectoryManager(fileSystem, paths);
             directory.CreateFileList();
             var result = directory.AudioFileList.Count;
             Assert.Equal(expected, result);
@@ -22,47 +21,47 @@ namespace Spectrogram.Test
             yield return new object[] {
                 new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    {@"/dev/test/1.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/2.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/SubFolder/3.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/SubFolder/4.flac", new MockFileData(string.Empty)},
+                    {@"/test/1.flac", new MockFileData(string.Empty)},
+                    {@"/test/2.flac", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/3.flac", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/4.flac", new MockFileData(string.Empty)},
                 }),
                 new string[]
                     {
-                    @"/dev/test",
+                    @"/test",
                     },
                 4 };
 
             yield return new object[] {
                 new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    {@"/dev/test/1.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/1.png", new MockFileData(string.Empty)},
-                    {@"/dev/test/SubFolder/3.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/SubFolder/4.flac", new MockFileData(string.Empty)},
+                    {@"/test/1.flac", new MockFileData(string.Empty)},
+                    {@"/test/1.png", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/3.flac", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/4.flac", new MockFileData(string.Empty)},
                 }),
                 new string[]
                     {
-                    @"/dev/test",
+                    @"/test",
                     },
                 2 };
 
             yield return new object[] {
                 new MockFileSystem(new Dictionary<string, MockFileData>
                     {
-                    {@"/dev/test/1.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/1.png", new MockFileData(string.Empty)},
-                    {@"/dev/test/SubFolder/3.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test/SubFolder/4.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test2/1.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test2/1.png", new MockFileData(string.Empty)},
-                    {@"/dev/test2/SubFolder/3.flac", new MockFileData(string.Empty)},
-                    {@"/dev/test2/SubFolder/4.flac", new MockFileData(string.Empty)},
+                    {@"/test/1.flac", new MockFileData(string.Empty)},
+                    {@"/test/1.png", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/3.flac", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/4.flac", new MockFileData(string.Empty)},
+                    {@"/test2/1.flac", new MockFileData(string.Empty)},
+                    {@"/test2/1.png", new MockFileData(string.Empty)},
+                    {@"/test2/SubFolder/3.flac", new MockFileData(string.Empty)},
+                    {@"/test2/SubFolder/4.flac", new MockFileData(string.Empty)},
                 }),
                 new string[]
                     {
-                    @"/dev/test",
-                    @"/dev/test2",
+                    @"/test",
+                    @"/test2",
                     },
                 4};
 
@@ -70,19 +69,19 @@ namespace Spectrogram.Test
             //yield return new object[] {
             //    new MockFileSystem(new Dictionary<string, MockFileData>
             //        {
-            //        {@"/dev/test/1.flac", new MockFileData(string.Empty)},
-            //        {@"/dev/test/1.mp3", new MockFileData(string.Empty)},
-            //        {@"/dev/test/SubFolder/3.flac", new MockFileData(string.Empty)},
-            //        {@"/dev/test/SubFolder/4.flac", new MockFileData(string.Empty)},
-            //        {@"/dev/test2/1.flac", new MockFileData(string.Empty)},
-            //        {@"/dev/test2/1.png", new MockFileData(string.Empty)},
-            //        {@"/dev/test2/SubFolder/3.flac", new MockFileData(string.Empty)},
-            //        {@"/dev/test2/SubFolder/4.flac", new MockFileData(string.Empty)},
+            //        {@"/test/1.flac", new MockFileData(string.Empty)},
+            //        {@"/test/1.mp3", new MockFileData(string.Empty)},
+            //        {@"/test/SubFolder/3.flac", new MockFileData(string.Empty)},
+            //        {@"/test/SubFolder/4.flac", new MockFileData(string.Empty)},
+            //        {@"/test2/1.flac", new MockFileData(string.Empty)},
+            //        {@"/test2/1.png", new MockFileData(string.Empty)},
+            //        {@"/test2/SubFolder/3.flac", new MockFileData(string.Empty)},
+            //        {@"/test2/SubFolder/4.flac", new MockFileData(string.Empty)},
             //    }),
             //    new string[]
             //        {
-            //        @"/dev/test",
-            //        @"/dev/test2",
+            //        @"/test",
+            //        @"/test2",
             //        },
             //    6};
         }
