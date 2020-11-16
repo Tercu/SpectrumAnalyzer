@@ -10,8 +10,7 @@ namespace ConsoleUI
         private static readonly Logger logger = Logger.GetInstance();
         static void Main(string[] args)
         {
-            string path = @"D:\dev\test";
-            //string pathToFile = @"D:\dev\440.flac";
+            string[] path = new string[] { @"D:\dev\test" };
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
             Task loggerTask = new Task(() => PrintLogs(token), token, TaskCreationOptions.LongRunning);

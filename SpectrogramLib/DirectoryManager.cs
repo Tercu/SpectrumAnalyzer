@@ -6,7 +6,7 @@ namespace Spectrogram
 {
     public class DirectoryManager
     {
-        public string FilePath { get; set; }
+        public string[] FilePath { get; set; }
         public string AudioFileExtension { get; set; }
         public string SpectrumFileExtension { get; set; }
         public List<string> AudioFileList { get; private set; }
@@ -14,7 +14,7 @@ namespace Spectrogram
 
         private readonly IFileSystem fileSystem;
 
-        public DirectoryManager(IFileSystem _fileSystem, string path, string audioExtension = ".flac", string spectrumExtension = ".png")
+        public DirectoryManager(IFileSystem _fileSystem, string[] path, string audioExtension = ".flac", string spectrumExtension = ".png")
         {
             fileSystem = _fileSystem;
             FilePath = path;
@@ -24,10 +24,20 @@ namespace Spectrogram
 
         public void CreateFileList()
         {
-            List<string> audioFiles = new List<string>(fileSystem.Directory.GetFiles(FilePath, $"*{AudioFileExtension}", SearchOption.AllDirectories));
-            List<string> spectrumFiles = new List<string>(fileSystem.Directory.GetFiles(FilePath, $"*{SpectrumFileExtension}", SearchOption.AllDirectories));
+            List<string> audioFiles = GetFileList(AudioFileExtension);
+            List<string> spectrumFiles = GetFileList(SpectrumFileExtension);
 
             RemoveFilesWithSpectrum(audioFiles, spectrumFiles);
+        }
+
+        private List<string> GetFileList(string extension)
+        {
+            List<string> files = new List<string>();
+            foreach (var path in FilePath)
+            {
+                files.AddRange(fileSystem.Directory.GetFiles(path, $"*{extension}", SearchOption.AllDirectories));
+            }
+            return files;
         }
 
         private void RemoveFilesWithSpectrum(List<string> audioFiles, List<string> spectrumFiles)
