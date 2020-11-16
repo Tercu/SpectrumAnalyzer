@@ -44,7 +44,8 @@ namespace Spectrogram
         {
             for (int i = 0; i < spectrumFiles.Count; i++)
             {
-                string path = @$"{ Path.GetDirectoryName(spectrumFiles[i]) }\{ Path.GetFileNameWithoutExtension(spectrumFiles[i]) }{ AudioFileExtension }";
+                char separator = Path.DirectorySeparatorChar;
+                string path = @$"{ Path.GetDirectoryName(spectrumFiles[i]) }{separator}{ Path.GetFileNameWithoutExtension(spectrumFiles[i]) }{ AudioFileExtension }";
                 audioFiles.Remove(path);
             };
             AudioFileList = audioFiles;
