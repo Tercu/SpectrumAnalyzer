@@ -17,6 +17,21 @@ namespace Spectrogram.Test
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        public void ShoutldThrowExceptionWhenPathIsEmpty()
+        {
+            MockFileSystem fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    {@"/test/1.flac", new MockFileData(string.Empty)},
+                    {@"/test/2.flac", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/3.flac", new MockFileData(string.Empty)},
+                    {@"/test/SubFolder/4.flac", new MockFileData(string.Empty)},
+                });
+            List<string> paths = new List<string> { @"", };
+
+            Assert.Throws<System.IO.DirectoryNotFoundException>(() => new DirectoryManager(fileSystem, paths));
+        }
+
         public static IEnumerable<object[]> GetFileList()
         {
             yield return new object[] {

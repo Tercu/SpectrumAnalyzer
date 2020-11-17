@@ -7,7 +7,7 @@ namespace Spectrogram
     public class Histogram
     {
         public Dictionary<double, double> Data { get; private set; }
-        private Logger logger = Logger.GetInstance();
+        private readonly Logger logger = Logger.GetInstance();
 
         public Histogram()
         {
