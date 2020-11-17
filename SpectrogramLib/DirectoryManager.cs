@@ -18,6 +18,13 @@ namespace Spectrogram
         {
             fileSystem = _fileSystem;
             FilePath = path;
+            int empty = 0;
+            FilePath.ForEach((x) => empty += string.IsNullOrEmpty(x) ? 1 : 0);
+            if (empty == FilePath.Count)
+            {
+                throw new DirectoryNotFoundException("Path cannot be empty!");
+            }
+
             AudioFileExtension = audioExtension;
             if (AudioFileExtension == null)
             {

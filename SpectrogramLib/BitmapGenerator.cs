@@ -33,7 +33,8 @@ namespace Spectrogram
         }
         public void SaveImage()
         {
-            string name = @$"{ Path.GetDirectoryName(PathToFile)}\{ Path.GetFileNameWithoutExtension(PathToFile) }.png";
+            char separator = Path.DirectorySeparatorChar;
+            string name = @$"{ Path.GetDirectoryName(PathToFile)}{separator}{ Path.GetFileNameWithoutExtension(PathToFile) }.png";
             Image.Save(name);
         }
     }
