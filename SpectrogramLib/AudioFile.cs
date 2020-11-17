@@ -9,7 +9,6 @@ namespace Spectrogram
     public class AudioFile
     {
         public string FilePath { get; set; }
-        private IWaveSource flacFile;
         public ISampleSource SampleSource { get; private set; }
         private readonly Logger logger = Logger.GetInstance();
         public int BitmapWidth { get; }

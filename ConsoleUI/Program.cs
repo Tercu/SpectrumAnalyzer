@@ -1,5 +1,6 @@
 ﻿using Spectrogram;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace ConsoleUI
         private static readonly Logger logger = Logger.GetInstance();
         static void Main(string[] args)
         {
-            string[] path = new string[] { @"D:\dev\test\s1", @"D:\dev\test\s2" };
+            List<string> path = new List<string> { @"D:\dev\test\s1", @"D:\dev\test\s2" };
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
             Task loggerTask = new Task(() => PrintLogs(token), token, TaskCreationOptions.LongRunning);
