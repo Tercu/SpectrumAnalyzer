@@ -9,8 +9,6 @@ namespace Spectrogram
         private readonly Logger logger = Logger.GetInstance();
         private readonly DirectoryManager dirManager;
         private List<AudioProcessor> audioProcessorList;
-        public string[] PathToDirectory { get; private set; }
-
         public void RunSingleThread()
         {
             foreach (var audioProcessor in audioProcessorList)
@@ -25,9 +23,8 @@ namespace Spectrogram
             WaitForTasks();
         }
 
-        public Spectrum(string[] pathToDirectory)
+        public Spectrum(List<string> pathToDirectory)
         {
-            PathToDirectory = pathToDirectory;
             dirManager = new DirectoryManager(new System.IO.Abstractions.FileSystem(), pathToDirectory);
             dirManager.CreateFileList();
             audioProcessorList = new List<AudioProcessor>();

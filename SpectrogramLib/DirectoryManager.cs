@@ -6,25 +6,30 @@ namespace Spectrogram
 {
     public class DirectoryManager
     {
-        public string[] FilePath { get; set; }
-        public string AudioFileExtension { get; set; }
+        public List<string> FilePath { get; set; }
+        public List<string> AudioFileExtension { get; set; }
         public string SpectrumFileExtension { get; set; }
         public List<string> AudioFileList { get; private set; }
         private Logger logger = Logger.GetInstance();
 
         private readonly IFileSystem fileSystem;
 
-        public DirectoryManager(IFileSystem _fileSystem, string[] path, string audioExtension = ".flac", string spectrumExtension = ".png")
+        public DirectoryManager(IFileSystem _fileSystem, List<string> path, List<string> audioExtension = null, string spectrumExtension = ".png")
         {
             fileSystem = _fileSystem;
             FilePath = path;
             AudioFileExtension = audioExtension;
+            if (AudioFileExtension == null)
+            {
+                AudioFileExtension = new List<string> { { ".flac" } };
+            }
             SpectrumFileExtension = spectrumExtension;
         }
 
         public void CreateFileList()
         {
-            List<string> audioFiles = GetFileList(AudioFileExtension);
+            List<string> audioFiles = new List<string>();
+            AudioFileExtension.ForEach(x => audioFiles.AddRange(GetFileList(x)));
             List<string> spectrumFiles = GetFileList(SpectrumFileExtension);
 
             RemoveFilesWithSpectrum(audioFiles, spectrumFiles);
@@ -42,11 +47,14 @@ namespace Spectrogram
 
         private void RemoveFilesWithSpectrum(List<string> audioFiles, List<string> spectrumFiles)
         {
+            char separator = Path.DirectorySeparatorChar;
             for (int i = 0; i < spectrumFiles.Count; i++)
             {
-                char separator = Path.DirectorySeparatorChar;
-                string path = @$"{ Path.GetDirectoryName(spectrumFiles[i]) }{separator}{ Path.GetFileNameWithoutExtension(spectrumFiles[i]) }{ AudioFileExtension }";
-                audioFiles.Remove(path);
+                foreach (var extension in AudioFileExtension)
+                {
+                    string path = @$"{ Path.GetDirectoryName(spectrumFiles[i]) }{separator}{ Path.GetFileNameWithoutExtension(spectrumFiles[i]) }{ extension }";
+                    audioFiles.Remove(path);
+                }
             };
             AudioFileList = audioFiles;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Found {AudioFileList.Count} files.");
