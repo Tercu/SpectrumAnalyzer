@@ -55,44 +55,20 @@ namespace Spectrogram.Test
         [Fact]
         public void ShouldShiftToPositiveValues()
         {
-            double min = -36.98970015307221;
             Dictionary<double, double> result = new Dictionary<double, double>
         {
-            {0, 6.989700043360188-min},
-            {2, -19.99999969260414-min},
-            {4, 6.989700043360188-min},
-            {6, -36.98970015307221-min},
+            {0, 0},
+            {2, 53.8421036080739},
+            {4, 0},
+            {6, 145.31822766627818},
         };
 
             Histogram histogram = new Histogram();
             histogram.Add(complex, samppleRate);
             histogram.CalculateDb();
-            histogram.ShiftToPositive(min);
+            histogram.ShiftToPositive(-10, -200, 0, 1023);
             CheckValues(result, histogram);
         }
-        [Fact]
-        public void ShouldNormalize()
-        {
-
-            double min = 0;
-            double shiftMin = -36.98970015307221;
-            double max = 43.979400196432394;
-            Dictionary<double, double> result = new Dictionary<double, double>
-        {
-            {0, 1},
-            {2, 0.38631041770884067},
-            {4, 1},
-            {6, 0},
-        };
-
-            Histogram histogram = new Histogram();
-            histogram.Add(complex, samppleRate);
-            histogram.CalculateDb();
-            histogram.ShiftToPositive(shiftMin);
-            histogram.Normalize(max, min);
-            CheckValues(result, histogram);
-        }
-
         private void CheckValues(Dictionary<double, double> result, Histogram actual)
         {
             var dictionaries = actual.Data.Values.Zip(result.Values, (l, r) => new { lhv = r, rhv = l });
