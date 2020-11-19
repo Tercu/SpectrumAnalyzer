@@ -44,7 +44,11 @@ namespace Spectrogram
             pthGrBrush.SurroundColors = colors;
             Graphics glue = Graphics.FromImage(map);
             glue.FillPath(pthGrBrush, path);
-            //map.Save(@"D:\dev\test\gradient.png");
+
+            path.Dispose();
+            pthGrBrush.Dispose();
+            glue.Dispose();
+            map.Save(@"D:\dev\test\gradient.png");
         }
         public Color GetGradientColor(int position)
         {

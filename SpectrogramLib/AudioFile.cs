@@ -23,6 +23,11 @@ namespace Spectrogram
             Init();
             BitmapWidth = (int)SampleSource.Length / FftSampleSize;
         }
+        ~AudioFile()
+        {
+            SampleSource.Dispose();
+            SampleSource = null;
+        }
 
         public Complex[] ReadFile()
         {
