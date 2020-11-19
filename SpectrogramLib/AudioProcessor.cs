@@ -51,7 +51,7 @@ namespace Spectrogram
             {
                 int sampleRate = audioFile.SampleSource.WaveFormat.SampleRate;
                 Complex[] complex = audioFile.ReadFile();
-                h.Add(complex, audioFile.SampleSource.WaveFormat.SampleRate, audioFile.FftSampleSize);
+                h.Add(complex, audioFile.SampleSource.WaveFormat.SampleRate);
                 if (i / sampleRate == counter)
                 {
                     histogramList.Add(h);
@@ -65,7 +65,7 @@ namespace Spectrogram
             double min = Double.MaxValue;
             foreach (var h in histogramList)
             {
-                min = Math.Min(min, h.Data.Values.Min());
+                min = Math.Min(min, h.Min);
             }
             foreach (var h in histogramList)
             {
@@ -78,8 +78,8 @@ namespace Spectrogram
             double max = Double.MinValue;
             foreach (var h in histogramList)
             {
-                max = Math.Max(max, h.Data.Values.Max());
-                min = Math.Min(min, h.Data.Values.Min());
+                max = Math.Max(max, h.Max);
+                min = Math.Min(min, h.Min);
                 h.Normalize(max, min);
             }
         }

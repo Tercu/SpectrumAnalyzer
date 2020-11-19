@@ -1,11 +1,14 @@
 ﻿using CSCore.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Spectrogram
 {
     public class Histogram
     {
+        public double Min { get { return Data.Values.Min(); } }
+        public double Max { get { return Data.Values.Max(); } }
         public Dictionary<double, double> Data { get; private set; }
         private readonly Logger logger = Logger.GetInstance();
 
@@ -13,13 +16,13 @@ namespace Spectrogram
         {
             Data = new Dictionary<double, double>();
         }
-        public void Add(Complex[] complex, int sampleRate, int fftSampleSize)
+        public void Add(Complex[] complex, int sampleRate)
         {
             for (int i = 0; i < complex.Length / 2; i++)
             {
-                double freq = i * sampleRate / fftSampleSize;
+                double freq = i * sampleRate / complex.Length;
                 double val = complex[i].Real * complex[i].Real + complex[i].Imaginary * complex[i].Imaginary;
-                AddToDictionary(Data, freq, val);
+                Data[freq] = val;
             }
         }
         public void ShiftToPositive(double shift)
@@ -62,17 +65,6 @@ namespace Spectrogram
             for (int i = 0; i < key.Length; ++i)
             {
                 //AddToDictionary(ShrinkedData, key[i] / timesModified[i], value[i]);
-            }
-        }
-        private void AddToDictionary(Dictionary<double, double> dictionary, double key, double value)
-        {
-            if (dictionary.ContainsKey(key))
-            {
-                dictionary[key] = value;
-            }
-            else
-            {
-                dictionary.Add(key, value);
             }
         }
 
