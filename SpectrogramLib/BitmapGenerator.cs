@@ -24,7 +24,8 @@ namespace Spectrogram
             int position;
             foreach (var h in histogram.Data)
             {
-                position = 1023 - (int)((double)h.Value * 1023);
+                //position = 1023 - (int)((double)h.Value * 1023);
+                position = (int)h.Value;
                 Color color = gradient.GetGradientColor(position);
                 Image.SetPixel(row, index, color);
                 --index;

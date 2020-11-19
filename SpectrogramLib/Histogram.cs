@@ -27,25 +27,31 @@ namespace Spectrogram
         }
         public void ShiftToPositive(double shift)
         {
-            Dictionary<double, double> ToPositive = new Dictionary<double, double>();
             foreach (var key in Data.Keys)
             {
                 double v = Data[key] - shift;
-                ToPositive[key] = v;
+                Data[key] = v;
             }
-            Data = ToPositive;
+        }
+        public void ShiftToPositive(double oldMax = -10, double oldMin = -200, double newMax = 0, double newMin = 1023)
+        {
+            double factor = (newMax - newMin) / (oldMax - oldMin) + newMin;
+            foreach (var key in Data.Keys)
+            {
+                double v = (Data[key] - oldMin) * factor;
+                if (v > newMin) { v = newMin; }
+                if (v < newMax) { v = newMax; }
+                Data[key] = v;
+            }
         }
         public void Normalize(double max, double min)
         {
-            Dictionary<double, double> NormalizedData = new Dictionary<double, double>();
-
             double factor = (max - min);
             foreach (var key in Data.Keys)
             {
                 double v = (Data[key] - min) / factor;
-                NormalizedData[key] = v;
+                Data[key] = v;
             }
-            Data = NormalizedData;
         }
         public void Shrink(int shrinkedSize)
         {
@@ -70,17 +76,15 @@ namespace Spectrogram
 
         public void CalculateDb()
         {
-            Dictionary<double, double> DbInfo = new Dictionary<double, double>();
             foreach (var key in Data.Keys)
             {
-                double log = -18;
+                double log = -10;
                 if (Data[key] != 0)
                 {
                     log = Math.Log10(Data[key]);
                 }
-                DbInfo[key] = 10 * log;
+                Data[key] = 10 * log;
             }
-            Data = DbInfo;
         }
     }
 }
