@@ -6,61 +6,36 @@ using System;
 
 namespace Spectrogram
 {
-    public class AudioFile
+    public class AudioFile : IAudioFile
     {
         public string FilePath { get; set; }
         public ISampleSource SampleSource { get; private set; }
         private readonly Logger logger = Logger.GetInstance();
         public int BitmapWidth { get; }
         public int FftSampleSize { get; }
+        public int Exponent { get; }
 
-        private int exponent = 11;
 
-        public AudioFile(string filePath)
+        public AudioFile(string filePath, int exponent = 11)
         {
+            Exponent = exponent;
             FilePath = filePath;
-            FftSampleSize = (int)Math.Pow(2, exponent);
-            Init();
+            SampleSource = CodecFactory.Instance.GetCodec(FilePath).ToSampleSource().ToMono();
+            FftSampleSize = (int)Math.Pow(2, Exponent);
             BitmapWidth = (int)SampleSource.Length / FftSampleSize;
         }
-        ~AudioFile()
-        {
-            SampleSource.Dispose();
-            SampleSource = null;
-        }
 
-        public Complex[] ReadFile()
+        public float[] ReadFile()
         {
             float[] samples = new float[FftSampleSize];
-            Complex[] complex = new Complex[FftSampleSize];
-
-            PerformFft(exponent, samples, complex);
-            return complex;
-        }
-
-        private void PerformFft(int exponent, float[] samples, Complex[] complex)
-        {
             SampleSource.Read(samples, 0, samples.Length);
-            for (int i = 0; i < samples.Length; ++i)
-            {
-                samples[i] *= (float)FastFourierTransformation.HammingWindow(i, samples.Length);
-            }
-            FillComplexArrayRealOnly(samples, complex);
-            FastFourierTransformation.Fft(complex, exponent, FftMode.Forward);
+
+            return samples;
         }
 
-        private void Init()
+        public void Dispose()
         {
-            IWaveSource flacFile = CodecFactory.Instance.GetCodec(FilePath);
-            SampleSource = flacFile.ToSampleSource().ToMono();
-        }
-        private void FillComplexArrayRealOnly(float[] samples, Complex[] complex)
-        {
-            for (int i = 0; i < samples.Length; ++i)
-            {
-                complex[i].Real = samples[i];
-                complex[i].Imaginary = 0;
-            }
+            SampleSource.Dispose();
         }
     }
 }

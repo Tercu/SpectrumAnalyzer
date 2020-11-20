@@ -3,14 +3,14 @@ using System.IO;
 
 namespace Spectrogram
 {
-    public class BitmapGenerator
+    public class BitmapGenerator : IBitmapGenerator
     {
         public string PathToFile { get; private set; }
         public Bitmap Image { get; private set; }
         public int Height { get; private set; }
         public int Width { get; private set; }
         private int currentRow = 0;
-        private static Gradient gradient = new Gradient();
+        private Gradient gradient = new Gradient();
         public BitmapGenerator(string path, int width, int height)
         {
             PathToFile = path;
@@ -34,6 +34,11 @@ namespace Spectrogram
             char separator = Path.DirectorySeparatorChar;
             string name = @$"{ Path.GetDirectoryName(PathToFile)}{separator}{ Path.GetFileNameWithoutExtension(PathToFile) }.png";
             Image.Save(name);
+        }
+
+        public void Dispose()
+        {
+            Image.Dispose();
         }
     }
 }
