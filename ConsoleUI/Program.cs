@@ -22,7 +22,7 @@ namespace ConsoleUI
             Spectrum spectrum = new Spectrum(path);
 
             //spectrum.RunSingleThread();
-            spectrum.RunMultiThread();
+            spectrum.RunMultiThreadTaskLimit();
 
             DateTime t2 = DateTime.Now;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"All files processed in {t2 - t1}. Program may be closed.");
