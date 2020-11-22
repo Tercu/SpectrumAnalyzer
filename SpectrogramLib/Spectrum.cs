@@ -14,10 +14,16 @@ namespace Spectrogram
         {
             foreach (var audioFile in dirManager.AudioFileList)
             {
-                AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(audioFile));
-                audioProcessor.ProcessFile();
+                RunAudioProcessor(audioFile);
             }
         }
+
+        private static void RunAudioProcessor(string audioFile)
+        {
+            AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(audioFile));
+            audioProcessor.ProcessFile();
+        }
+
         public void RunMultiThread()
         {
             InitTasks();

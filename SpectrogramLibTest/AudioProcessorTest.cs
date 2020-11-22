@@ -1,34 +1,59 @@
-﻿using CSCore.Utils;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Moq;
+using Xunit;
 
 namespace Spectrogram.Test
 {
-    class AudioProcessorTest
+    public class AudioProcessorTest
     {
-        readonly Complex[] complex =  {
-            new Complex( (float)1, (float)2 ),
-            new Complex( (float)0.1, (float)0 ),
-            new Complex( (float)1, (float)2 ),
-            new Complex( (float)0.01, (float)0.01 ),
-            new Complex( (float)1, (float)2 ),
-            new Complex( (float)0.1, (float)0 ),
-            new Complex( (float)1, (float)2 ),
-            new Complex( (float)0.01, (float)0.01 ),
-        };
-        public void ShouldProcessFile()
+        readonly float[] samples;
+        readonly Mock<IAudioFile> audioFileMock = new Mock<IAudioFile>(); // Mock dla typu T
+        readonly Mock<IBitmapGenerator> bitmapMock = new Mock<IBitmapGenerator>();
+        public AudioProcessorTest()
         {
-            Mock<IAudioFile> audioFileMock = new Mock<IAudioFile>(); // Mock dla typu T
-            var audioFile = audioFileMock.Object; // Obiekt typu T
-            //audioFileMock.Setup(x => x.ReadFile()).Returns(complex);
+            samples = new float[]
+            {
+                1,1,1,1,1,1,1,1
+            };
+            //var audioFile = audioFileMock.Object; // Obiekt typu T
+            audioFileMock.Setup(x => x.ReadFile()).Returns(samples);
             audioFileMock.Setup(x => x.SampleSource.WaveFormat.SampleRate).Returns(8);
+            int sampleLength = samples.Length * 4;
+            audioFileMock.Setup(x => x.SampleSource.Length).Returns(sampleLength);
+            int fftSampleSize = 8;
+            audioFileMock.Setup(x => x.FftSampleSize).Returns(fftSampleSize);
+            int position = 8;
+            audioFileMock.Setup(x => x.SampleSource.Position)
+                .Callback(() => position += 8)
+                .Returns(() => position);
 
-            //AudioProcessor audioProcessor = new AudioProcessor(audioFile);
-            //audioProcessor.ProcessFile();
+            bitmapMock.Setup((x) => x.EditRow(It.IsAny<int>(), It.IsAny<Histogram>())).Verifiable();
+            bitmapMock.Setup((x) => x.SaveImage()).Verifiable();
+        }
+        public void Dispose()
+        {
+            audioFileMock.Object.Dispose();
+            bitmapMock.Object.Dispose();
+        }
+
+        [Fact]
+        public void ShouldProcessShortFile()
+        {
+            AudioProcessor audioProcessor = new AudioProcessor(audioFileMock.Object, bitmapMock.Object);
+            audioProcessor.ProcessFile();
+            bitmapMock.Verify(x => x.EditRow(It.IsAny<int>(), It.IsAny<Histogram>()), Times.Once);
+            bitmapMock.Verify(x => x.SaveImage(), Times.Once);
+        }
+
+        [Fact]
+        public void ShouldProcessLongFile()
+        {
+            int sampleLength = samples.Length * 20;
+            audioFileMock.Setup(x => x.SampleSource.Length).Returns(sampleLength);
+
+            AudioProcessor audioProcessor = new AudioProcessor(audioFileMock.Object, bitmapMock.Object);
+            audioProcessor.ProcessFile();
+            bitmapMock.Verify(x => x.EditRow(It.IsAny<int>(), It.IsAny<Histogram>()), Times.Exactly(9));
+            bitmapMock.Verify(x => x.SaveImage(), Times.Once);
         }
     }
 }

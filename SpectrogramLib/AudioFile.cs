@@ -1,7 +1,5 @@
 ﻿using CSCore;
 using CSCore.Codecs;
-using CSCore.DSP;
-using CSCore.Utils;
 using System;
 
 namespace Spectrogram
@@ -16,13 +14,27 @@ namespace Spectrogram
         public int Exponent { get; }
 
 
-        public AudioFile(string filePath, int exponent = 11)
+        public AudioFile(string filePath, int exponent = 11, Boolean mono = false)
         {
             Exponent = exponent;
             FilePath = filePath;
-            SampleSource = CodecFactory.Instance.GetCodec(FilePath).ToSampleSource().ToMono();
+            SampleSource = CodecFactory.Instance.GetCodec(FilePath).ToSampleSource();
+            if (mono)
+            {
+                SampleSource = SampleSource.ToMono();
+            }
             FftSampleSize = (int)Math.Pow(2, Exponent);
             BitmapWidth = (int)SampleSource.Length / FftSampleSize;
+        }
+        public AudioFile(ISampleSource source, int exponent = 11, Boolean mono = false)
+        {
+            Exponent = exponent;
+            SampleSource = source;
+            FftSampleSize = (int)Math.Pow(2, Exponent);
+            if (mono)
+            {
+                SampleSource = SampleSource.ToMono();
+            }
         }
 
         public float[] ReadFile()
