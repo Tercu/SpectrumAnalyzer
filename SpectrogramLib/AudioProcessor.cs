@@ -36,7 +36,7 @@ namespace Spectrogram
             Bitmap = bitmap;
             if (Bitmap == null)
             {
-                long width = AudioFile.SampleSource.Length / sampleRate;
+                long width = (AudioFile.SampleSource.Length / sampleRate) + 1;
                 Bitmap = new BitmapGenerator(AudioFile.FilePath, (int)(width), AudioFile.FftSampleSize / 2);
             }
         }

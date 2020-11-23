@@ -5,20 +5,22 @@ namespace Spectrogram
 {
     public class Gradient
     {
-        private Bitmap map = new Bitmap(1, 1024);
+        public Bitmap ColorMap { get; init; }
 
         public Gradient()
         {
+            ColorMap = new Bitmap(1, 1024);
             // Put the points of a polygon in an array.
-            int height = map.Height / 5;
+            int height = ColorMap.Height / 5;
             Point[] points = {
-       new Point(0, -1),
-       new Point(0, (int)(0.7*height)),
-       new Point(0, (int)(1.3*height)),
-       new Point(0, (int)(2.7*height)),
-       new Point(0, (int)(3.0*height)),
-       new Point(0, (int)(5.0*height)),
-       new Point(1, 30),
+                new Point(0, -1),
+                new Point(0, (int)(0.7* height)),
+                new Point(0, (int)(1.6 * height)),
+                new Point(0, (int)(2.4 * height)),
+                new Point(0, (int)(2.9 * height)),
+                new Point(0, (int)(3.0 * height)),
+                new Point(0, (int)(5.0 * height)),
+                new Point(1, 30),
             };
 
             // Use the array of points to construct a path.
@@ -33,26 +35,27 @@ namespace Spectrogram
 
             // Set the colors of the points in the array.
             Color[] colors = {
-       Color.Yellow,
-       Color.Orange,
-       Color.Red,
-       Color.DarkViolet,
-       Color.Black,
-       Color.Black,
+                Color.White,
+                Color.Yellow,
+                Color.Red,
+                Color.DarkViolet,
+                Color.DarkBlue,
+                Color.Black,
+                Color.Black,
             };
 
             pthGrBrush.SurroundColors = colors;
-            Graphics glue = Graphics.FromImage(map);
+            Graphics glue = Graphics.FromImage(ColorMap);
             glue.FillPath(pthGrBrush, path);
 
             path.Dispose();
             pthGrBrush.Dispose();
             glue.Dispose();
-            map.Save(@"D:\dev\test\gradient.png");
+            //map.Save(@"D:\dev\test\gradient.png");
         }
         public Color GetGradientColor(int position)
         {
-            return map.GetPixel(0, position);
+            return ColorMap.GetPixel(0, position);
         }
     }
 }

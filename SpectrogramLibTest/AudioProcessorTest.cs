@@ -14,7 +14,6 @@ namespace Spectrogram.Test
             {
                 1,1,1,1,1,1,1,1
             };
-            //var audioFile = audioFileMock.Object; // Obiekt typu T
             audioFileMock.Setup(x => x.ReadFile()).Returns(samples);
             audioFileMock.Setup(x => x.SampleSource.WaveFormat.SampleRate).Returns(8);
             int sampleLength = samples.Length * 4;
@@ -47,12 +46,14 @@ namespace Spectrogram.Test
         [Fact]
         public void ShouldProcessLongFile()
         {
-            int sampleLength = samples.Length * 20;
+            int sampleLength = samples.Length * 30;
             audioFileMock.Setup(x => x.SampleSource.Length).Returns(sampleLength);
 
             AudioProcessor audioProcessor = new AudioProcessor(audioFileMock.Object, bitmapMock.Object);
             audioProcessor.ProcessFile();
-            bitmapMock.Verify(x => x.EditRow(It.IsAny<int>(), It.IsAny<Histogram>()), Times.Exactly(9));
+            int calls = (int)audioFileMock.Object.SampleSource.Length / audioFileMock.Object.FftSampleSize;
+            int callTimes = calls / ((audioFileMock.Object.SampleSource.WaveFormat.SampleRate / audioFileMock.Object.FftSampleSize) + 1);
+            bitmapMock.Verify(x => x.EditRow(It.IsAny<int>(), It.IsAny<Histogram>()), Times.Exactly(callTimes - 1));
             bitmapMock.Verify(x => x.SaveImage(), Times.Once);
         }
     }
