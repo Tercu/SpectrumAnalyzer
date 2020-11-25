@@ -9,8 +9,10 @@ namespace Spectrogram
         int FftSampleSize { get; }
         string FilePath { get; }
         public int Exponent { get; }
+        public TimeSpan Duration { get; }
         ISampleSource SampleSource { get; }
 
         float[] ReadFile();
+        AudioData GetAudioData();
     }
 }

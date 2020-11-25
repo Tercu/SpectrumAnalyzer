@@ -6,12 +6,12 @@ namespace Spectrogram
 {
     public class AudioFile : IAudioFile
     {
-        public string FilePath { get; set; }
-        public ISampleSource SampleSource { get; private set; }
+        public string FilePath { get; init; }
+        public ISampleSource SampleSource { get; init; }
         private readonly Logger logger = Logger.GetInstance();
-        public int BitmapWidth { get; }
-        public int FftSampleSize { get; }
-        public int Exponent { get; }
+        public int FftSampleSize { get; init; }
+        public int Exponent { get; init; }
+        public TimeSpan Duration { get { return SampleSource.GetLength(); } }
 
 
         public AudioFile(string filePath, int exponent = 11, Boolean mono = false)
@@ -24,7 +24,6 @@ namespace Spectrogram
                 SampleSource = SampleSource.ToMono();
             }
             FftSampleSize = (int)Math.Pow(2, Exponent);
-            BitmapWidth = (int)SampleSource.Length / FftSampleSize;
         }
         public AudioFile(ISampleSource source, int exponent = 11, Boolean mono = false)
         {
@@ -48,6 +47,12 @@ namespace Spectrogram
         public void Dispose()
         {
             SampleSource.Dispose();
+        }
+
+        public AudioData GetAudioData()
+        {
+            AudioData data = new AudioData(this);
+            return data;
         }
     }
 }

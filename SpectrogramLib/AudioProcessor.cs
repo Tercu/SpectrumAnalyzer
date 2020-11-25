@@ -12,10 +12,10 @@ namespace Spectrogram
 {
     public class AudioProcessor
     {
-        public IAudioFile AudioFile { get; private set; }
         public IBitmapGenerator Bitmap { get; private set; }
+        public AudioData AudioInfo { get; init; }
         private readonly Logger logger = Logger.GetInstance();
-        private readonly int sampleRate;
+        private IAudioFile AudioFile { get; init; }
         private Histogram h = new Histogram();
         private ConcurrentQueue<float[]> sampleQueue;
 
@@ -30,26 +30,26 @@ namespace Spectrogram
         public AudioProcessor(IAudioFile audioFile, IBitmapGenerator bitmap = null)
         {
             AudioFile = audioFile;
-            sampleRate = AudioFile.SampleSource.WaveFormat.SampleRate;
+            AudioInfo = AudioFile.GetAudioData();
             sampleQueue = new ConcurrentQueue<float[]>();
-            complex = new Complex[AudioFile.FftSampleSize];
+            complex = new Complex[AudioInfo.FftSampleSize];
             Bitmap = bitmap;
             if (Bitmap == null)
             {
-                long width = (AudioFile.SampleSource.Length / sampleRate) + 1;
-                Bitmap = new BitmapGenerator(AudioFile.FilePath, (int)(width), AudioFile.FftSampleSize / 2);
+                long width = (AudioInfo.Length / AudioInfo.SampleRate) + 1;
+                Bitmap = new BitmapGenerator(AudioInfo, (int)(width), AudioInfo.FftSampleSize / 2);
             }
         }
         public void ProcessFile()
         {
 
             DateTime s1 = DateTime.Now;
-            logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(AudioFile.FilePath)}");
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(AudioInfo.FilePath)}");
 
             CreateHistogramList();
 
             DateTime s2 = DateTime.Now;
-            logger.AddLogMessage(LogMessage.LogLevel.Info, $"File {Path.GetFileName(AudioFile.FilePath)} done in: {s2 - s1}");
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"File {Path.GetFileName(AudioInfo.FilePath)} done in: {s2 - s1}");
         }
 
         private void CreateHistogramList()
@@ -64,7 +64,6 @@ namespace Spectrogram
                 Bitmap.EditRow(currentRow, h);
                 ++currentRow;
             }
-            Debug.WriteLine($"Bitmap width: {AudioFile.SampleSource.Length / sampleRate}, row: { currentRow }");
             Bitmap.SaveImage();
         }
 
@@ -76,12 +75,12 @@ namespace Spectrogram
 
         private void QueueToHistogram()
         {
-            for (int i = 0; i <= sampleRate / AudioFile.FftSampleSize; ++i)
+            for (int i = 0; i <= AudioInfo.SampleRate / AudioInfo.FftSampleSize; ++i)
             {
                 if (sampleQueue.TryDequeue(out float[] sample))
                 {
-                    FftToComplex(AudioFile.Exponent, sample, complex);
-                    h.Add(complex, AudioFile.SampleSource.WaveFormat.SampleRate);
+                    FftToComplex(AudioInfo.Exponent, sample);
+                    h.Add(complex, AudioInfo.SampleRate);
                 }
                 else if (FileFinished == false) { --i; }
                 else { break; }
@@ -90,7 +89,7 @@ namespace Spectrogram
 
         private async void ReadFileToQueue(int maxQueueSize = 100)
         {
-            while (AudioFile.SampleSource.Length - AudioFile.SampleSource.Position > AudioFile.FftSampleSize)
+            while (AudioInfo.Length - AudioFile.SampleSource.Position > AudioInfo.FftSampleSize)
             {
                 if (sampleQueue.Count < maxQueueSize)
                 {
@@ -103,7 +102,7 @@ namespace Spectrogram
             }
             FileFinished = true;
         }
-        private void FillComplexArrayRealOnly(float[] samples, Complex[] complex)
+        private void FillComplexArrayRealOnly(float[] samples)
         {
             for (int i = 0; i < samples.Length; ++i)
             {
@@ -111,14 +110,14 @@ namespace Spectrogram
                 complex[i].Imaginary = 0;
             }
         }
-        private void FftToComplex(int exponent, float[] samples, Complex[] complex)
+        private void FftToComplex(int exponent, float[] samples)
         {
 
             for (int i = 0; i < samples.Length; ++i)
             {
                 samples[i] *= (float)FastFourierTransformation.HammingWindow(i, samples.Length);
             }
-            FillComplexArrayRealOnly(samples, complex);
+            FillComplexArrayRealOnly(samples);
             FastFourierTransformation.Fft(complex, exponent, FftMode.Forward);
         }
     }

@@ -8,6 +8,7 @@ namespace Spectrogram.Test
         readonly float[] samples;
         readonly Mock<IAudioFile> audioFileMock = new Mock<IAudioFile>(); // Mock dla typu T
         readonly Mock<IBitmapGenerator> bitmapMock = new Mock<IBitmapGenerator>();
+        readonly AudioData AudioInfo;
         public AudioProcessorTest()
         {
             samples = new float[]
@@ -24,14 +25,11 @@ namespace Spectrogram.Test
             audioFileMock.Setup(x => x.SampleSource.Position)
                 .Callback(() => position += 8)
                 .Returns(() => position);
+            audioFileMock.Setup(x => x.GetAudioData())
+                .Returns(() => new AudioData(audioFileMock.Object));
 
             bitmapMock.Setup((x) => x.EditRow(It.IsAny<int>(), It.IsAny<Histogram>())).Verifiable();
             bitmapMock.Setup((x) => x.SaveImage()).Verifiable();
-        }
-        public void Dispose()
-        {
-            audioFileMock.Object.Dispose();
-            bitmapMock.Object.Dispose();
         }
 
         [Fact]

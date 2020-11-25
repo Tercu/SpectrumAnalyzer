@@ -9,16 +9,14 @@ namespace Spectrogram
 {
     public class BitmapGenerator : IBitmapGenerator
     {
-        public string PathToFile { get; private set; }
         public Bitmap Image { get; private set; }
-        public Boolean IsSingleChannel { get; init; }
+        private AudioData AudioInfo { get; init; }
         private int currentRow = 0;
         private readonly Gradient gradient = new Gradient();
 
-        public BitmapGenerator(string path, int width, int height, Boolean isSingleChannel = false)
+        public BitmapGenerator(AudioData audioData, int width, int height)
         {
-            PathToFile = path;
-            IsSingleChannel = isSingleChannel;
+            AudioInfo = audioData;
             Image = new Bitmap(width, height);
         }
 
@@ -38,8 +36,8 @@ namespace Spectrogram
         {
             RemoveEmptyRows();
             char separator = Path.DirectorySeparatorChar;
-            string name = @$"{ Path.GetDirectoryName(PathToFile)}{separator}{ Path.GetFileNameWithoutExtension(PathToFile) }.bmp";
-            if (IsSingleChannel)
+            string name = @$"{ Path.GetDirectoryName(AudioInfo.FilePath)}{separator}{ Path.GetFileNameWithoutExtension(AudioInfo.FilePath) }.png";
+            if (AudioInfo.Channels == 1)
             {
                 SaveSingleChannel(name);
             }
@@ -58,9 +56,8 @@ namespace Spectrogram
             Rectangle channel2rect = new Rectangle(0, Image.Height / 2, Image.Width, Image.Height / 2);
             Bitmap channel2 = Image.Clone(channel2rect, Image.PixelFormat);
 
-
             int outline = 40;
-            Bitmap outputImage = new Bitmap(Image.Width + 100, Image.Height + 100);
+            using Bitmap outputImage = new Bitmap(Image.Width + 100, Image.Height + 100);
             Rectangle channel1Position = new Rectangle(0, 0, Image.Width + outline, (Image.Height / 2) + outline);
             Rectangle channel2Position = new Rectangle(0, (Image.Height / 2) + outline, Image.Width + outline, (Image.Height / 2) + outline);
 
@@ -110,8 +107,8 @@ namespace Spectrogram
 
                 Rectangle verticalScale = new Rectangle(0, 0, outline, plotHeigth);
                 Rectangle verticalScalePosition = new Rectangle(plotWidth, 0, outline, plotHeigth);
-                Rectangle horizontalScale = new Rectangle(0, 0, plotWidth, outline);
-                Rectangle horizontalScalePosition = new Rectangle(0, plotHeigth, plotWidth, outline);
+                Rectangle horizontalScale = new Rectangle(0, 0, plotWidth + 20, outline);
+                Rectangle horizontalScalePosition = new Rectangle(0, plotHeigth, plotWidth + 20, outline);
 
                 Rectangle channelPosition = new Rectangle(outline, outline, plotWidth - outline, plotHeigth - outline);
 
@@ -119,8 +116,8 @@ namespace Spectrogram
 
                 graphics.DrawImage(DrawWerticalScale(verticalScale, false), verticalScale);
                 graphics.DrawImage(DrawWerticalScale(verticalScale, true), verticalScalePosition);
-                graphics.DrawImage(DrawHorizontalScale(horizontalScale, false, new TimeSpan(0, 4, 40)), horizontalScale);
-                graphics.DrawImage(DrawHorizontalScale(horizontalScale, true, new TimeSpan(0, 4, 40)), horizontalScalePosition);
+                graphics.DrawImage(DrawHorizontalScale(horizontalScale, false), horizontalScale);
+                graphics.DrawImage(DrawHorizontalScale(horizontalScale, true), horizontalScalePosition);
 
                 graphics.Flush();
             }
@@ -135,22 +132,28 @@ namespace Spectrogram
             graphics.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
         }
 
-        private Bitmap DrawHorizontalScale(Rectangle scale, Boolean onTop, TimeSpan time)
+        private Bitmap DrawHorizontalScale(Rectangle scale, Boolean onTop)
         {
             Bitmap output = new Bitmap(scale.Width, scale.Height);
             using (Graphics graphics = Graphics.FromImage(output))
             {
                 if (onTop)
                 {
-                    graphics.DrawLine(Pens.LightGray, new Point(scale.X + 20, scale.Y), new Point(scale.Width, scale.Y));
-                    for (int i = 1; i <= 21; ++i)
+                    int timeStepCount = 2;
+                    if ((int)AudioInfo.Duration.TotalSeconds > 100)
                     {
-                        graphics.DrawString($"{(int)(time.TotalSeconds / 22 * i)}", new Font("Monospace", 8), Brushes.LightGray, (scale.Width / 22) * i, 5);
+                        timeStepCount = (int)AudioInfo.Duration.TotalSeconds / 50;
+                    }
+                    int timeStep = (int)AudioInfo.Duration.TotalSeconds / timeStepCount;
+                    graphics.DrawLine(Pens.LightGray, new Point(scale.X + 20, scale.Y), new Point(scale.Width - 20, scale.Y));
+                    for (int i = 1; i <= timeStepCount; ++i)
+                    {
+                        graphics.DrawString($"{(int)(timeStep * i)}", new Font("Monospace", 8), Brushes.LightGray, ((scale.Width / timeStepCount) * i) - 20, 5);
                     }
                 }
                 else
                 {
-                    graphics.DrawLine(Pens.LightGray, new Point(scale.X + 20, scale.Height - 1), new Point(scale.Width, scale.Height - 1));
+                    graphics.DrawLine(Pens.LightGray, new Point(scale.X + 20, scale.Height - 1), new Point(scale.Width - 20, scale.Height - 1));
                 }
                 graphics.Flush();
             }
