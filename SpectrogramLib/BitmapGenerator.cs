@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 
@@ -13,6 +12,7 @@ namespace Spectrogram
         private AudioData AudioInfo { get; init; }
         private int currentRow = 0;
         private readonly Gradient gradient = new Gradient();
+        private readonly int outline = 40;
 
         public BitmapGenerator(AudioData audioData, int width, int height)
         {
@@ -47,32 +47,59 @@ namespace Spectrogram
             }
         }
 
+        private void SaveSingleChannel(string name)
+        {
+            Rectangle channel1rect = new Rectangle(0, 0, Image.Width, Image.Height);
+            Bitmap channel1 = Image.Clone(channel1rect, Image.PixelFormat);
+            channel1 = DrawSingleChannelWithScales(channel1);
+            channel1.Save(name);
+            channel1.Dispose();
+        }
+
         private void SaveMultiChannel(string name)
         {
             Rectangle channel1rect = new Rectangle(0, 0, Image.Width, Image.Height / 2);
             Bitmap channel1 = Image.Clone(channel1rect, Image.PixelFormat);
             channel1.RotateFlip(RotateFlipType.RotateNoneFlipY);
+            channel1 = DrawSingleChannelWithScales(channel1);
 
             Rectangle channel2rect = new Rectangle(0, Image.Height / 2, Image.Width, Image.Height / 2);
             Bitmap channel2 = Image.Clone(channel2rect, Image.PixelFormat);
+            channel2 = DrawSingleChannelWithScales(channel2);
 
-            int outline = 40;
-            using Bitmap outputImage = new Bitmap(Image.Width + 100, Image.Height + 100);
-            Rectangle channel1Position = new Rectangle(0, 0, Image.Width + outline, (Image.Height / 2) + outline);
-            Rectangle channel2Position = new Rectangle(0, (Image.Height / 2) + outline, Image.Width + outline, (Image.Height / 2) + outline);
+            int gradientWidth = 50;
+            using Bitmap outputImage = new Bitmap(channel1.Width + gradientWidth, channel1.Height + channel2.Height);
+            using Graphics graphics = Graphics.FromImage(outputImage);
+            SetHighQualityGraphics(graphics);
+            graphics.FillRectangle(Brushes.Black, new Rectangle(channel1.Width, 0, gradientWidth, outputImage.Height));
 
-            using (Graphics graphics = Graphics.FromImage(outputImage))
-            {
-                graphics.FillRectangle(Brushes.Black, new Rectangle(0, 0, outputImage.Width, outputImage.Height));
+            Rectangle channel1Position = new Rectangle(0, 0, channel1.Width, channel1.Height);
+            Rectangle channel2Position = new Rectangle(0, channel1.Height, channel2.Width, channel2.Height);
 
-                graphics.DrawImage(DrawScales(channel1, channel1Position, outline / 2), channel1Position);
-                graphics.DrawImage(DrawScales(channel2, channel2Position, outline / 2), channel2Position);
+            graphics.DrawImage(channel1, channel1Position);
+            graphics.DrawImage(channel2, channel2Position);
 
-                Rectangle gradientRect = new Rectangle(outputImage.Width - 50, outputImage.Height * 1 / 5, 40, 680);
-                graphics.DrawImage(DrawGradient(gradientRect), gradientRect);
+            channel1.Dispose();
+            channel2.Dispose();
 
-            }
+            Rectangle gradientRect = new Rectangle(outputImage.Width - gradientWidth, outputImage.Height * 1 / 5, 40, 680);
+
+            graphics.DrawImage(DrawGradient(gradientRect), gradientRect);
+            graphics.Flush();
+
             outputImage.Save($"{name}");
+        }
+
+        private Bitmap DrawSingleChannelWithScales(Bitmap channel1)
+        {
+            Bitmap output = new Bitmap(channel1.Width + outline, channel1.Height + outline);
+            using Graphics graphics = Graphics.FromImage(output);
+            SetHighQualityGraphics(graphics);
+            Rectangle fullImage = new Rectangle(0, 0, output.Width, output.Height);
+            graphics.FillRectangle(Brushes.Black, fullImage);
+            graphics.DrawImage(DrawScales(channel1, fullImage, 20), fullImage);
+            graphics.Flush();
+            return output;
         }
 
         private Bitmap DrawGradient(Rectangle grad)
@@ -90,6 +117,7 @@ namespace Spectrogram
                     }
                 }
                 graphics.DrawString($"dBFS", new Font("Monospace", 8), Brushes.LightGray, 0, output.Height - 20);
+                graphics.Flush();
             }
             return output;
         }
@@ -106,18 +134,18 @@ namespace Spectrogram
                 int plotWidth = position.Width - outline;
 
                 Rectangle verticalScale = new Rectangle(0, 0, outline, plotHeigth);
-                Rectangle verticalScalePosition = new Rectangle(plotWidth, 0, outline, plotHeigth);
+                Rectangle verticalScaleLeftLine = new Rectangle(plotWidth, 0, outline, plotHeigth);
                 Rectangle horizontalScale = new Rectangle(0, 0, plotWidth + 20, outline);
-                Rectangle horizontalScalePosition = new Rectangle(0, plotHeigth, plotWidth + 20, outline);
+                Rectangle horizontalScaleTopLine = new Rectangle(0, plotHeigth, plotWidth + 20, outline);
 
                 Rectangle channelPosition = new Rectangle(outline, outline, plotWidth - outline, plotHeigth - outline);
 
                 graphics.DrawImage(channelImage, channelPosition);
 
                 graphics.DrawImage(DrawWerticalScale(verticalScale, false), verticalScale);
-                graphics.DrawImage(DrawWerticalScale(verticalScale, true), verticalScalePosition);
+                graphics.DrawImage(DrawWerticalScale(verticalScale, true), verticalScaleLeftLine);
                 graphics.DrawImage(DrawHorizontalScale(horizontalScale, false), horizontalScale);
-                graphics.DrawImage(DrawHorizontalScale(horizontalScale, true), horizontalScalePosition);
+                graphics.DrawImage(DrawHorizontalScale(horizontalScale, true), horizontalScaleTopLine);
 
                 graphics.Flush();
             }
@@ -148,7 +176,7 @@ namespace Spectrogram
                     graphics.DrawLine(Pens.LightGray, new Point(scale.X + 20, scale.Y), new Point(scale.Width - 20, scale.Y));
                     for (int i = 1; i <= timeStepCount; ++i)
                     {
-                        graphics.DrawString($"{(int)(timeStep * i)}", new Font("Monospace", 8), Brushes.LightGray, ((scale.Width / timeStepCount) * i) - 20, 5);
+                        graphics.DrawString($"{(timeStep * i)}", new Font("Monospace", 8), Brushes.LightGray, ((scale.Width / timeStepCount) * i) - 20, 5);
                     }
                 }
                 else
@@ -163,7 +191,7 @@ namespace Spectrogram
         private Bitmap DrawWerticalScale(Rectangle scale, Boolean lineOnLeft)
         {
             Bitmap output = new Bitmap(scale.Width, scale.Height);
-            Graphics graphics = Graphics.FromImage(output);
+            using Graphics graphics = Graphics.FromImage(output);
             if (lineOnLeft)
             {
                 graphics.DrawLine(Pens.LightGray, new Point(scale.X, scale.Y + 20), new Point(scale.X, scale.Height));
@@ -177,13 +205,7 @@ namespace Spectrogram
                 graphics.DrawString($"{i}", new Font("Monospace", 8), Brushes.LightGray, 0, scale.Height - (scale.Height / 22) * i);
             }
             graphics.Flush();
-            graphics.Dispose();
             return output;
-        }
-
-        private void SaveSingleChannel(string name)
-        {
-            Image.Save($"{name}");
         }
 
         private void RemoveEmptyRows()
@@ -194,6 +216,7 @@ namespace Spectrogram
         public void Dispose()
         {
             Image.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

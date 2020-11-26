@@ -8,7 +8,6 @@ namespace Spectrogram.Test
         readonly float[] samples;
         readonly Mock<IAudioFile> audioFileMock = new Mock<IAudioFile>(); // Mock dla typu T
         readonly Mock<IBitmapGenerator> bitmapMock = new Mock<IBitmapGenerator>();
-        readonly AudioData AudioInfo;
         public AudioProcessorTest()
         {
             samples = new float[]

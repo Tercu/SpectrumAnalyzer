@@ -2,10 +2,7 @@
 using CSCore.Utils;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Spectrogram
@@ -16,10 +13,10 @@ namespace Spectrogram
         public AudioData AudioInfo { get; init; }
         private readonly Logger logger = Logger.GetInstance();
         private IAudioFile AudioFile { get; init; }
-        private Histogram h = new Histogram();
-        private ConcurrentQueue<float[]> sampleQueue;
+        private readonly Histogram histogram = new Histogram();
+        private readonly ConcurrentQueue<float[]> sampleQueue;
 
-        private Complex[] complex;
+        private readonly Complex[] complex;
         private Boolean FileFinished = false;
 
         ~AudioProcessor()
@@ -40,37 +37,32 @@ namespace Spectrogram
                 Bitmap = new BitmapGenerator(AudioInfo, (int)(width), AudioInfo.FftSampleSize / 2);
             }
         }
+
         public void ProcessFile()
         {
-
             DateTime s1 = DateTime.Now;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(AudioInfo.FilePath)}");
 
-            CreateHistogramList();
-
-            DateTime s2 = DateTime.Now;
-            logger.AddLogMessage(LogMessage.LogLevel.Info, $"File {Path.GetFileName(AudioInfo.FilePath)} done in: {s2 - s1}");
-        }
-
-        private void CreateHistogramList()
-        {
             int currentRow = 0;
-            ReadFileToQueue();
+            ReadFileToQueueAsync();
             while (sampleQueue.IsEmpty == false || FileFinished == false)
             {
                 QueueToHistogram();
                 CalculateHistogram();
 
-                Bitmap.EditRow(currentRow, h);
+                Bitmap.EditRow(currentRow, histogram);
                 ++currentRow;
             }
             Bitmap.SaveImage();
+
+            DateTime s2 = DateTime.Now;
+            logger.AddLogMessage(LogMessage.LogLevel.Info, $"File {Path.GetFileName(AudioInfo.FilePath)} done in: {s2 - s1}");
         }
 
         private void CalculateHistogram()
         {
-            h.CalculateDb();
-            h.ShiftToPositive();
+            histogram.CalculateDb();
+            histogram.ShiftToPositive();
         }
 
         private void QueueToHistogram()
@@ -80,14 +72,14 @@ namespace Spectrogram
                 if (sampleQueue.TryDequeue(out float[] sample))
                 {
                     FftToComplex(AudioInfo.Exponent, sample);
-                    h.Add(complex, AudioInfo.SampleRate);
+                    histogram.Add(complex, AudioInfo.SampleRate);
                 }
                 else if (FileFinished == false) { --i; }
                 else { break; }
             }
         }
 
-        private async void ReadFileToQueue(int maxQueueSize = 100)
+        private async void ReadFileToQueueAsync(int maxQueueSize = 100)
         {
             while (AudioInfo.Length - AudioFile.SampleSource.Position > AudioInfo.FftSampleSize)
             {
