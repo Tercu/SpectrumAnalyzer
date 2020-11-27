@@ -11,6 +11,7 @@ namespace Spectrogram
         public Bitmap Image { get; private set; }
         private AudioData AudioInfo { get; init; }
         private int currentRow = 0;
+        private bool disposedValue;
         private readonly Gradient gradient = new Gradient();
         private readonly int outline = 40;
 
@@ -213,9 +214,28 @@ namespace Spectrogram
             Image = Image.Clone(new Rectangle(0, 0, currentRow, Image.Height), Image.PixelFormat);
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    return;
+                }
+
+                Image.Dispose();
+                disposedValue = true;
+            }
+        }
+
+        ~BitmapGenerator()
+        {
+            Dispose(disposing: false);
+        }
+
         public void Dispose()
         {
-            Image.Dispose();
+            Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
     }

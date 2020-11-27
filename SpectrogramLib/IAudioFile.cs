@@ -1,5 +1,4 @@
 ﻿using CSCore;
-using CSCore.Utils;
 using System;
 
 namespace Spectrogram

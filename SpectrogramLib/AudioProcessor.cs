@@ -44,8 +44,8 @@ namespace Spectrogram
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(AudioInfo.FilePath)}");
 
             int currentRow = 0;
-            ReadFileToQueueAsync();
-            while (sampleQueue.IsEmpty == false || FileFinished == false)
+            _ = ReadFileToQueueAsync();
+            while (!sampleQueue.IsEmpty || !FileFinished)
             {
                 QueueToHistogram();
                 CalculateHistogram();
@@ -74,12 +74,12 @@ namespace Spectrogram
                     FftToComplex(AudioInfo.Exponent, sample);
                     histogram.Add(complex, AudioInfo.SampleRate);
                 }
-                else if (FileFinished == false) { --i; }
+                else if (!FileFinished) { --i; }
                 else { break; }
             }
         }
 
-        private async void ReadFileToQueueAsync(int maxQueueSize = 100)
+        private async Task ReadFileToQueueAsync(int maxQueueSize = 100)
         {
             while (AudioInfo.Length - AudioFile.SampleSource.Position > AudioInfo.FftSampleSize)
             {

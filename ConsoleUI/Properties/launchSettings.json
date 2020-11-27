@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleUI": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\dev\\test\\s1\" \"D:\\dev\\test\\s2\""
+    }
+  }
+}
