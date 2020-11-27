@@ -51,7 +51,6 @@ namespace Spectrogram
             path.Dispose();
             pthGrBrush.Dispose();
             glue.Dispose();
-            //map.Save(@"D:\dev\test\gradient.png");
         }
         public Color GetGradientColor(int position)
         {

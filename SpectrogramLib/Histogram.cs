@@ -20,7 +20,7 @@ namespace Spectrogram
         {
             for (int i = 0; i < complex.Length / 2; i++)
             {
-                double freq = i * sampleRate / complex.Length;
+                double freq = (double)(i * sampleRate / complex.Length);
                 double val = complex[i].Real * complex[i].Real + complex[i].Imaginary * complex[i].Imaginary;
                 Data[freq] = val;
             }

@@ -9,9 +9,14 @@ namespace ConsoleUI
     class ConsoleUI
     {
         private static readonly Logger logger = Logger.GetInstance();
+
+        protected ConsoleUI()
+        {
+        }
+
         static void Main(string[] args)
         {
-            List<string> path = new List<string> { @"D:\dev\test\s1", @"D:\dev\test\s2" };
+            List<string> path = new List<string>(args);
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
             Task loggerTask = new Task(() => PrintLogs(token), token, TaskCreationOptions.LongRunning);
@@ -21,7 +26,6 @@ namespace ConsoleUI
 
             Spectrum spectrum = new Spectrum(path);
 
-            //spectrum.RunSingleThread();
             spectrum.RunMultiThreadTaskLimit();
 
             DateTime t2 = DateTime.Now;
@@ -38,7 +42,6 @@ namespace ConsoleUI
         }
         private static void PrintLogs(CancellationToken token)
         {
-            Logger logger = Logger.GetInstance();
             while (!token.IsCancellationRequested)
             {
                 while (logger.LogMessages.Count > 0)

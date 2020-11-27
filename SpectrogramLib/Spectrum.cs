@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Spectrogram
@@ -9,7 +8,7 @@ namespace Spectrogram
         private readonly List<Task> taskList = new List<Task>();
         private readonly Logger logger = Logger.GetInstance();
         private readonly DirectoryManager dirManager;
-        private List<AudioProcessor> audioProcessorList;
+        private readonly List<AudioProcessor> audioProcessorList;
         public void RunSingleThread()
         {
             foreach (var audioFile in dirManager.AudioFileList)

@@ -8,10 +8,13 @@ namespace Spectrogram
     {
         public string FilePath { get; init; }
         public ISampleSource SampleSource { get; init; }
-        private readonly Logger logger = Logger.GetInstance();
         public int FftSampleSize { get; init; }
         public int Exponent { get; init; }
         public TimeSpan Duration { get { return SampleSource.GetLength(); } }
+
+        private readonly Logger logger = Logger.GetInstance();
+        private bool disposedValue;
+
 
 
         public AudioFile(string filePath, int exponent = 11, Boolean mono = false)
@@ -44,15 +47,35 @@ namespace Spectrogram
             return samples;
         }
 
-        public void Dispose()
-        {
-            SampleSource.Dispose();
-        }
-
         public AudioData GetAudioData()
         {
             AudioData data = new AudioData(this);
             return data;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    return;
+                }
+                SampleSource?.Dispose();
+
+                disposedValue = true;
+            }
+        }
+
+        ~AudioFile()
+        {
+            Dispose(disposing: false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

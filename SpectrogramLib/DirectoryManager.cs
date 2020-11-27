@@ -10,7 +10,7 @@ namespace Spectrogram
         public List<string> AudioFileExtension { get; set; }
         public string SpectrumFileExtension { get; set; }
         public List<string> AudioFileList { get; private set; }
-        private Logger logger = Logger.GetInstance();
+        private readonly Logger logger = Logger.GetInstance();
 
         private readonly IFileSystem fileSystem;
 
@@ -62,7 +62,7 @@ namespace Spectrogram
                     string path = @$"{ Path.GetDirectoryName(spectrumFiles[i]) }{separator}{ Path.GetFileNameWithoutExtension(spectrumFiles[i]) }{ extension }";
                     audioFiles.Remove(path);
                 }
-            };
+            }
             AudioFileList = audioFiles;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Found {AudioFileList.Count} files.");
         }
