@@ -2,6 +2,7 @@
 using CSCore.Utils;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,11 +14,13 @@ namespace Spectrogram
         public AudioData AudioInfo { get; init; }
         private readonly Logger logger = Logger.GetInstance();
         private IAudioFile AudioFile { get; init; }
-        private readonly Histogram histogram = new Histogram();
-        private readonly ConcurrentQueue<float[]> sampleQueue;
+        private readonly ConcurrentQueue<KeyValuePair<int, Histogram>> calculatedHisotgramQueue;
+        private readonly ConcurrentQueue<KeyValuePair<int, float[]>> sampleQueue;
+        private readonly int fftSamplesPerSecond;
 
         private readonly Complex[] complex;
         private Boolean FileFinished = false;
+
 
         ~AudioProcessor()
         {
@@ -28,12 +31,14 @@ namespace Spectrogram
         {
             AudioFile = audioFile;
             AudioInfo = AudioFile.GetAudioData();
-            sampleQueue = new ConcurrentQueue<float[]>();
+            fftSamplesPerSecond = AudioInfo.SampleRate / AudioInfo.FftSampleSize;
             complex = new Complex[AudioInfo.FftSampleSize];
+            sampleQueue = new ConcurrentQueue<KeyValuePair<int, float[]>>();
+            calculatedHisotgramQueue = new ConcurrentQueue<KeyValuePair<int, Histogram>>();
             Bitmap = bitmap;
             if (Bitmap == null)
             {
-                long width = (AudioInfo.Length / AudioInfo.SampleRate) + 1;
+                long width = (AudioInfo.Length / AudioInfo.SampleRate) + 1000;
                 Bitmap = new BitmapGenerator(AudioInfo, (int)(width), AudioInfo.FftSampleSize / 2);
             }
         }
@@ -43,49 +48,75 @@ namespace Spectrogram
             DateTime s1 = DateTime.Now;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"Processing file: {Path.GetFileName(AudioInfo.FilePath)}");
 
-            int currentRow = 0;
-            _ = ReadFileToQueueAsync();
-            while (!sampleQueue.IsEmpty || !FileFinished)
-            {
-                QueueToHistogram();
-                CalculateHistogram();
+            var fileReaderTask = ReadFileToListAsync();
+            var histogramCalculator = QueueToHistogram();
+            var bitmapEditor = SaveToBitmapAsync();
 
-                Bitmap.EditRow(currentRow, histogram);
-                ++currentRow;
-            }
+            fileReaderTask.Wait();
+            histogramCalculator.Wait();
+            bitmapEditor.Wait();
             Bitmap.SaveImage();
 
             DateTime s2 = DateTime.Now;
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"File {Path.GetFileName(AudioInfo.FilePath)} done in: {s2 - s1}");
         }
 
-        private void CalculateHistogram()
+        private async Task SaveToBitmapAsync()
+        {
+            while (sampleQueue.Count > 0 || calculatedHisotgramQueue.Count > 0 || !FileFinished)
+            {
+                if (calculatedHisotgramQueue.TryDequeue(out KeyValuePair<int, Histogram> KVPair))
+                {
+                    Bitmap.EditRow(KVPair.Key, KVPair.Value);
+                }
+                else
+                {
+                    await Task.Delay(50);
+                }
+            }
+        }
+
+        private void CalculateHistogram(Histogram histogram)
         {
             histogram.CalculateDb();
             histogram.ShiftToPositive();
         }
 
-        private void QueueToHistogram()
+        private async Task QueueToHistogram()
         {
-            for (int i = 0; i <= AudioInfo.SampleRate / AudioInfo.FftSampleSize; ++i)
+            int maxQueueSize = 100;
+            int currentRow = 0;
+            while (sampleQueue.Count > 0 || !FileFinished)
             {
-                if (sampleQueue.TryDequeue(out float[] sample))
+                if (calculatedHisotgramQueue.Count <= maxQueueSize)
                 {
-                    FftToComplex(AudioInfo.Exponent, sample);
-                    histogram.Add(complex, AudioInfo.SampleRate);
+                    Histogram histogram = new Histogram();
+                    while (sampleQueue.TryPeek(out KeyValuePair<int, float[]> KVPair) && KVPair.Key == currentRow)
+                    {
+                        _ = sampleQueue.TryDequeue(out KVPair);
+                        FftToComplex(AudioInfo.Exponent, KVPair.Value);
+                        histogram.Add(complex, AudioInfo.SampleRate);
+                    }
+                    CalculateHistogram(histogram);
+                    calculatedHisotgramQueue.Enqueue(new KeyValuePair<int, Histogram>(currentRow, histogram));
+                    ++currentRow;
                 }
-                else if (!FileFinished) { --i; }
-                else { break; }
+                else
+                {
+                    await Task.Delay(50);
+                }
             }
         }
 
-        private async Task ReadFileToQueueAsync(int maxQueueSize = 100)
+        private async Task ReadFileToListAsync(int maxQueueSize = 1000)
         {
+            int currentSample = -1;
             while (AudioInfo.Length - AudioFile.SampleSource.Position > AudioInfo.FftSampleSize)
             {
                 if (sampleQueue.Count < maxQueueSize)
                 {
-                    sampleQueue.Enqueue(AudioFile.ReadFile());
+                    KeyValuePair<int, float[]> KVPair = new KeyValuePair<int, float[]>(++currentSample / fftSamplesPerSecond, AudioFile.ReadFile());
+                    sampleQueue.Enqueue(KVPair);
                 }
                 else
                 {
