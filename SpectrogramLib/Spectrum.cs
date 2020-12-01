@@ -19,7 +19,7 @@ namespace Spectrogram
 
         private static void RunAudioProcessor(string audioFile)
         {
-            AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(audioFile));
+            AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(audioFile, mono: false));
             audioProcessor.ProcessFile();
         }
 
