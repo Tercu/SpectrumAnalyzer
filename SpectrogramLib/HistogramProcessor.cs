@@ -1,5 +1,6 @@
 ﻿using CSCore.DSP;
 using CSCore.Utils;
+using System;
 using System.Collections.Generic;
 
 namespace Spectrogram
@@ -9,6 +10,7 @@ namespace Spectrogram
         public int RangeStart { get; init; }
         public int RangeSize { get; init; }
         public int Row { get; set; }
+        public Boolean MarkedToRemove { get; private set; }
         public KeyValuePair<int, Histogram> CalculatedHisotgramQueue { get; private set; }
         private List<KeyValuePair<int, float[]>> sampleQueue;
         private readonly AudioData audioInfo;
@@ -21,6 +23,12 @@ namespace Spectrogram
             Row = row;
             this.audioInfo = audioInfo;
             sampleQueue = new List<KeyValuePair<int, float[]>>();
+            MarkedToRemove = false;
+        }
+
+        public void MarkToRemove()
+        {
+            MarkedToRemove = true;
         }
 
         public bool IsInRange(int index)
@@ -28,12 +36,16 @@ namespace Spectrogram
             if (index >= RangeStart && index < RangeStart + RangeSize)
                 return true;
             return false;
+
         }
-        public bool IsFull()
+        public bool IsFull
         {
-            if (sampleQueue.Count >= RangeSize)
-                return true;
-            return false;
+            get
+            {
+                if (sampleQueue.Count >= RangeSize)
+                    return true;
+                return false;
+            }
         }
 
         public void AddToQueue(KeyValuePair<int, float[]> keyValuePair)

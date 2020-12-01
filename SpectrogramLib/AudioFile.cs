@@ -39,12 +39,11 @@ namespace Spectrogram
             }
         }
 
-        public float[] ReadFile()
+        public long ReadFile(out float[] sample)
         {
-            float[] samples = new float[FftSampleSize];
-            SampleSource.Read(samples, 0, samples.Length);
-
-            return samples;
+            sample = new float[FftSampleSize];
+            long shift = SampleSource.Read(sample, 0, sample.Length);
+            return shift;
         }
 
         public AudioData GetAudioData()

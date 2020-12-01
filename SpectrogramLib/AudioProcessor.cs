@@ -12,8 +12,8 @@ namespace Spectrogram
         public AudioData AudioInfo { get; init; }
         private readonly Logger logger = Logger.GetInstance();
         private IAudioFile AudioFile { get; init; }
-        private readonly ConcurrentQueue<KeyValuePair<int, float[]>> sampleQueue;
-        private ConcurrentQueue<KeyValuePair<int, Histogram>> histogramQueue;
+        public ConcurrentQueue<KeyValuePair<int, float[]>> SampleQueue { get; private set; }
+        private readonly ConcurrentQueue<KeyValuePair<int, Histogram>> histogramQueue;
         private readonly int fftSamplesPerSecond;
         private int rangeStart = -1;
 
@@ -30,12 +30,12 @@ namespace Spectrogram
             AudioFile = audioFile;
             AudioInfo = AudioFile.GetAudioData();
             fftSamplesPerSecond = AudioInfo.SampleRate / AudioInfo.FftSampleSize;
-            sampleQueue = new ConcurrentQueue<KeyValuePair<int, float[]>>();
+            SampleQueue = new ConcurrentQueue<KeyValuePair<int, float[]>>();
             histogramQueue = new ConcurrentQueue<KeyValuePair<int, Histogram>>();
             Bitmap = bitmap;
             if (Bitmap == null)
             {
-                long width = (AudioInfo.Length / AudioInfo.SampleRate);
+                long width = (AudioInfo.Length / AudioInfo.SampleRate) + 1000;
                 Bitmap = new BitmapGenerator(AudioInfo, (int)(width), AudioInfo.FftSampleSize / 2);
             }
         }
@@ -50,31 +50,35 @@ namespace Spectrogram
             var fileReaderTask = ReadFileToListAsync();
             var bitmapEditor = SaveToBitmapAsync();
 
-
+            int processorLimit = 3;
             List<HistogramProcessor> histogramProcessor = new List<HistogramProcessor>();
-            histogramProcessor.Add(new HistogramProcessor(AudioInfo, ++rangeStart * fftSamplesPerSecond, fftSamplesPerSecond + 1, ++row));
-            while (!sampleQueue.IsEmpty || !FileFinished)
+
+            while (!SampleQueue.IsEmpty || !FileFinished)
             {
-                if (sampleQueue.TryDequeue(out KeyValuePair<int, float[]> KVPair))
+                while (histogramProcessor.Count < processorLimit)
+                {
+                    //histogramProcessor.Add(new HistogramProcessor(AudioInfo, ++rangeStart * fftSamplesPerSecond, fftSamplesPerSecond + 1, ++row));
+                    histogramProcessor.Add(new HistogramProcessor(AudioInfo, ++rangeStart * fftSamplesPerSecond, fftSamplesPerSecond, ++row));
+                }
+                if (SampleQueue.TryDequeue(out KeyValuePair<int, float[]> KVPair))
                 {
                     for (int i = 0; i < histogramProcessor.Count; ++i)
                     {
-                        if (histogramProcessor[i].IsFull())
+                        if (histogramProcessor[i].IsFull && !histogramProcessor[i].MarkedToRemove)
                         {
                             FromHistogramToQueue(histogramProcessor, i);
-                            histogramProcessor.RemoveAt(i);
-                            histogramProcessor.Add(new HistogramProcessor(AudioInfo, ++rangeStart * fftSamplesPerSecond, fftSamplesPerSecond, ++row));
                         }
-                        else
+                        else if (!histogramProcessor[i].MarkedToRemove && histogramProcessor[i].IsInRange(KVPair.Key))
                         {
                             histogramProcessor[i].AddToQueue(KVPair);
                         }
                     }
                 }
+                histogramProcessor.RemoveAll((x) => x.MarkedToRemove);
             }
 
             FromHistogramToQueue(histogramProcessor, 0);
-            histogramProcessor.RemoveAt(0);
+            histogramProcessor.Clear();
 
             fileReaderTask.Wait();
             bitmapEditor.Wait();
@@ -89,11 +93,12 @@ namespace Spectrogram
         {
             histogramProcessor[i].QueueToHistogram();
             histogramQueue.Enqueue(histogramProcessor[i].CalculatedHisotgramQueue);
+            histogramProcessor[i].MarkToRemove();
         }
 
         private async Task SaveToBitmapAsync()
         {
-            while (!sampleQueue.IsEmpty || histogramQueue.Count > 0 || !FileFinished)
+            while (!SampleQueue.IsEmpty || histogramQueue.Count > 0 || !FileFinished)
             {
                 if (histogramQueue.TryDequeue(out KeyValuePair<int, Histogram> KVPair))
                 {
@@ -106,15 +111,15 @@ namespace Spectrogram
             }
         }
 
-        private async Task ReadFileToListAsync(int maxQueueSize = 1000)
+        public async Task ReadFileToListAsync(int maxQueueSize = 1000)
         {
             int currentSample = -1;
-            while (AudioInfo.Length - AudioFile.SampleSource.Position > AudioInfo.FftSampleSize)
+            while (AudioFile.ReadFile(out float[] result) != 0)
             {
-                if (sampleQueue.Count < maxQueueSize)
+                if (SampleQueue.Count < maxQueueSize)
                 {
-                    KeyValuePair<int, float[]> KVPair = new KeyValuePair<int, float[]>(++currentSample, AudioFile.ReadFile());
-                    sampleQueue.Enqueue(KVPair);
+                    KeyValuePair<int, float[]> KVPair = new KeyValuePair<int, float[]>(++currentSample, result);
+                    SampleQueue.Enqueue(KVPair);
                 }
                 else
                 {

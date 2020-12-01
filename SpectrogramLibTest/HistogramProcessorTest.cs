@@ -29,6 +29,7 @@ namespace Spectrogram.Test
         [InlineData(1, 0, 3)]
         [InlineData(2, 0, 3)]
         [InlineData(2, 5, 3)]
+
         public void ShouldNotBeFull(int times, int rangeStart, int rangeSize)
         {
             AudioData info = new AudioData(new TimeSpan(), 0, 0, 0, 0, 0, "bla");
@@ -38,14 +39,14 @@ namespace Spectrogram.Test
             {
                 histogramProcessor.AddToQueue(new System.Collections.Generic.KeyValuePair<int, float[]>(5, val));
             }
-            Assert.False(histogramProcessor.IsFull());
+            Assert.False(histogramProcessor.IsFull);
         }
 
         [Theory]
-        [InlineData(3, 0, 3)]
         [InlineData(4, 0, 3)]
         [InlineData(5, 0, 3)]
         [InlineData(5, 10, 3)]
+        [InlineData(3, 0, 3)]
         public void ShouldBeFull(int times, int rangeStart, int rangeSize)
         {
             AudioData info = new AudioData(new TimeSpan(), 2, 20, 1, 1, 2, "bla");
@@ -55,7 +56,7 @@ namespace Spectrogram.Test
             {
                 histogramProcessor.AddToQueue(new System.Collections.Generic.KeyValuePair<int, float[]>(5, val));
             }
-            Assert.True(histogramProcessor.IsFull());
+            Assert.True(histogramProcessor.IsFull);
         }
     }
 
