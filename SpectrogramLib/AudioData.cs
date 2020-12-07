@@ -2,15 +2,15 @@
 
 namespace Spectrogram
 {
-    public struct AudioData
+    public readonly struct AudioData
     {
-        public readonly TimeSpan Duration { get; init; }
-        public readonly int FftSampleSize { get; init; }
-        public readonly long Length { get; init; }
-        public readonly int Channels { get; init; }
-        public readonly int Exponent { get; init; }
-        public readonly int SampleRate { get; init; }
-        public readonly string FilePath { get; init; }
+        public TimeSpan Duration { get; init; }
+        public int FftSampleSize { get; init; }
+        public long Length { get; init; }
+        public int Channels { get; init; }
+        public int Exponent { get; init; }
+        public int SampleRate { get; init; }
+        public string FilePath { get; init; }
 
         public AudioData(IAudioFile file)
         {
