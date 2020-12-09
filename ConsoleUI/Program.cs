@@ -10,25 +10,22 @@ namespace ConsoleUI
     {
         private static readonly Logger logger = Logger.GetInstance();
 
-        protected ConsoleUI()
-        {
-        }
+        protected ConsoleUI() { }
 
         static void Main(string[] args)
         {
             List<string> path = new List<string>(args);
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
-            Task loggerTask = new Task(() => PrintLogs(token), token, TaskCreationOptions.LongRunning);
-            loggerTask.Start();
+            var loggerTask = PrintLogs(token);
 
             DateTime t1 = DateTime.Now;
 
             Spectrum spectrum = new Spectrum(path);
-
-            spectrum.RunMultiThreadTaskLimit();
+            spectrum.RunSingleThread();
 
             DateTime t2 = DateTime.Now;
+
             logger.AddLogMessage(LogMessage.LogLevel.Info, $"All files processed in {t2 - t1}. Program may be closed.");
             while (!logger.IsEmpty())
             {
@@ -40,7 +37,7 @@ namespace ConsoleUI
 
             _ = Console.ReadKey();
         }
-        private static void PrintLogs(CancellationToken token)
+        private static async Task PrintLogs(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
@@ -48,6 +45,7 @@ namespace ConsoleUI
                 {
                     Console.WriteLine(logger.GetLogMessage().ToString());
                 }
+                await Task.Delay(50, CancellationToken.None);
             }
         }
     }

@@ -19,8 +19,8 @@ namespace Spectrogram
 
         private static void RunAudioProcessor(string audioFile)
         {
-            AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(audioFile));
-            audioProcessor.ProcessFile();
+            AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(audioFile, mono: false));
+            audioProcessor.ProcessFileAsync();
         }
 
         public void RunMultiThread()
@@ -37,7 +37,7 @@ namespace Spectrogram
                 if (taskList.Count < limit)
                 {
                     AudioProcessor audioProcessor = new AudioProcessor(new AudioFile(fileName));
-                    var t = Task.Run(() => { audioProcessor.ProcessFile(); });
+                    var t = Task.Run(() => { audioProcessor.ProcessFileAsync(); });
 
                     taskList.Add(t);
                 }
@@ -69,7 +69,7 @@ namespace Spectrogram
         {
             foreach (var audioProcessor in audioProcessorList)
             {
-                taskList.Add(new Task(() => audioProcessor.ProcessFile(), TaskCreationOptions.LongRunning));
+                taskList.Add(new Task(() => audioProcessor.ProcessFileAsync(), TaskCreationOptions.LongRunning));
             }
         }
         private void StartTasks()

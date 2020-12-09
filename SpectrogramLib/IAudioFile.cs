@@ -11,7 +11,7 @@ namespace Spectrogram
         public TimeSpan Duration { get; }
         ISampleSource SampleSource { get; }
 
-        float[] ReadFile();
+        public long ReadFile(out float[] sample);
         AudioData GetAudioData();
     }
 }
